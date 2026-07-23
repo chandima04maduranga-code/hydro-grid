@@ -4,10 +4,15 @@ require('dotenv').config();
 
 const app = express();
 
-// Middleware
+// 1. Middleware (MUST come before routes)
 app.use(express.json());
 
-// Connect to actual MongoDB Atlas Database
+// 2. Define Routes (MUST come after app is initialized)
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/plants', require('./routes/plants'));
+app.use('/api/sensors', require('./routes/sensors'));
+
+// 3. Connect to actual MongoDB Atlas Database
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connected to ACTUAL MongoDB Atlas Database!'))
   .catch((err) => {
