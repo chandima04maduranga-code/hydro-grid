@@ -1,18 +1,20 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors'); // IMPORT CORS
 require('dotenv').config();
 
 const app = express();
 
-// 1. Middleware (MUST come before routes)
+// Middleware
+app.use(cors()); // ENABLE CORS FOR FRONTEND
 app.use(express.json());
 
-// 2. Define Routes (MUST come after app is initialized)
+// Define Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/plants', require('./routes/plants'));
 app.use('/api/sensors', require('./routes/sensors'));
 
-// 3. Connect to actual MongoDB Atlas Database
+// Connect to actual MongoDB Atlas Database
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connected to ACTUAL MongoDB Atlas Database!'))
   .catch((err) => {
