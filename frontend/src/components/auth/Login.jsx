@@ -15,7 +15,7 @@ const Login = ({ setToken }) => {
       setToken(receivedToken);
       localStorage.setItem("token", receivedToken);
     } catch (err) {
-      setError(err.response?.data?.msg || "Authentication failed.");
+      setError(err.response?.data?.msg || "Authentication failed. Please verify credentials.");
     }
   };
 
@@ -26,7 +26,7 @@ const Login = ({ setToken }) => {
       <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <input 
           type="email" 
-          placeholder="Chandima's Email / User ID" 
+          placeholder="Enter your email address" 
           value={email} 
           onChange={(e) => setEmail(e.target.value)} 
           required
@@ -34,14 +34,14 @@ const Login = ({ setToken }) => {
         />
         <input 
           type="password" 
-          placeholder="Password" 
+          placeholder="Enter your password" 
           value={password} 
           onChange={(e) => setPassword(e.target.value)} 
           required
           style={{ padding: "0.5rem" }}
         />
         <button type="submit" style={{ padding: "0.5rem", background: "#007bff", color: "white", border: "none", cursor: "pointer" }}>
-          Login
+          Sign In
         </button>
       </form>
     </div>

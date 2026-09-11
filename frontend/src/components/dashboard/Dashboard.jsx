@@ -28,7 +28,7 @@ const Dashboard = ({ handleLogout }) => {
   return (
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2>Hydro_Grid Operator Panel — Welcome, Chandima</h2>
+        <h2>Hydro_Grid Control Panel — Enterprise Dashboard</h2>
         <button onClick={handleLogout} style={{ padding: "0.5rem 1rem", background: "#dc3545", color: "white", border: "none", cursor: "pointer" }}>
           Logout
         </button>
