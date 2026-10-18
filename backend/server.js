@@ -12,7 +12,6 @@ app.use(express.json());
 // Define Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/plants', require('./routes/plants'));
-app.use('/api/sensors', require('./routes/sensors'));
 app.use("/api/sensors", require("./routes/sensorRoutes"));
 
 // Connect to actual MongoDB Atlas Database

@@ -13,7 +13,7 @@ const App = () => {
   return (
     <div>
       {!token ? (
-        <Login setToken={setToken} />
+        <Login setAuth={setToken} />
       ) : (
         <Dashboard handleLogout={handleLogout} />
       )}
