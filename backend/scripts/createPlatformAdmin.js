@@ -1,5 +1,6 @@
-// Creates the first (or an additional) administrator account.
-// Usage: npm run create-admin   (from the backend folder)
+// Creates a platform administrator: the account that approves and manages
+// companies. Platform admins belong to no company.
+// Usage: npm run create-platform-admin   (from the project or backend folder)
 // The password is typed interactively and never stored in shell history.
 require('dotenv').config({ quiet: true });
 const readline = require('readline');
@@ -50,7 +51,7 @@ const main = async () => {
     process.exit(1);
   }
 
-  console.log('\nHydro_Grid — create administrator account\n');
+  console.log('\nHydro_Grid — create platform administrator\n');
 
   const name = await askUntilValid('Full name: ', isNonEmptyString, 'Name is required');
   const email = await askUntilValid('Email: ', isValidEmail, 'Enter a valid email address');
@@ -84,18 +85,18 @@ const main = async () => {
     email: normalisedEmail,
     phone: phone ? normaliseLkMobile(phone) : '',
     password: await bcrypt.hash(password, 12),
-    role: 'admin',
+    role: 'platform_admin',
     status: 'active',
     reviewedAt: new Date()
   });
 
-  console.log(`\n✅ Administrator created: ${admin.name} <${admin.email}>`);
-  console.log('   You can now log in at http://localhost:5173\n');
+  console.log(`\n✅ Platform administrator created: ${admin.name} <${admin.email}>`);
+  console.log('   Log in at http://localhost:5173 and choose "Hydro_Grid platform" as the company\n');
 };
 
 main()
   .catch((err) => {
-    console.error('❌ Failed to create administrator:', err.message);
+    console.error('❌ Failed to create platform administrator:', err.message);
     process.exitCode = 1;
   })
   .finally(async () => {
