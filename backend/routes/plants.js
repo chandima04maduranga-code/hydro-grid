@@ -5,8 +5,8 @@ const auth = require('../middleware/auth');
 
 // @route   GET /api/plants
 // @desc    Get all plants
-// @access  Public
-router.get('/', async (req, res) => {
+// @access  Private
+router.get('/', auth, async (req, res) => {
   try {
     const plants = await Plant.find().sort({ createdAt: -1 });
     res.json(plants);

@@ -1,20 +1,27 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-module.exports = function(req, res, next) {
-  // Get token from the header
-  const token = req.header('x-auth-token');
+// Verifies the Bearer token and loads the current user.
+// Users who are no longer active are rejected even if their token is still valid.
+module.exports = async function auth(req, res, next) {
+  const header = req.header('Authorization') || '';
+  const [scheme, token] = header.split(' ');
 
-  // Check if no token exists
-  if (!token) {
-    return res.status(401).json({ message: 'No token, authorization denied' });
+  if (scheme !== 'Bearer' || !token) {
+    return res.status(401).json({ code: 'NO_TOKEN', message: 'Authentication required' });
   }
 
-  // Verify the token
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded.user;
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(payload.sub);
+
+    if (!user || user.status !== 'active') {
+      return res.status(401).json({ code: 'ACCOUNT_INACTIVE', message: 'Account is not active' });
+    }
+
+    req.user = user;
     next();
   } catch (err) {
-    res.status(401).json({ message: 'Token is not valid' });
+    return res.status(401).json({ code: 'INVALID_TOKEN', message: 'Session expired, please log in again' });
   }
 };
