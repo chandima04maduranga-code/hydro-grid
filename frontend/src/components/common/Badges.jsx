@@ -8,6 +8,7 @@ const STATUS_STYLES = {
 };
 
 const ROLE_STYLES = {
+  platform_admin: "bg-gold-500 text-white ring-gold-500",
   admin: "bg-tea-800 text-white ring-tea-800",
   farm_manager: "bg-gold-100 text-gold-600 ring-gold-300",
   field_officer: "bg-white text-tea-700 ring-tea-200"

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Activity, CalendarDays, Droplet, Droplets, Leaf, MapPin, Sprout, Thermometer } from "lucide-react";
+import { Activity, Building2, CalendarDays, Droplet, Droplets, Leaf, MapPin, Sprout, Thermometer } from "lucide-react";
 import apiClient from "../api/axiosConfig";
 import { useAuth } from "../context/AuthContext";
 import { RoleBadge } from "../components/common/Badges";
@@ -88,6 +88,12 @@ const DashboardPage = () => {
           <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">{t("dashboard.greeting", { name: user.name })}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-gray-600">
             <RoleBadge role={user.role} />
+            {user.company && (
+              <span className="inline-flex items-center gap-1.5 font-semibold text-tea-800">
+                <Building2 className="h-4 w-4 text-leaf-600" aria-hidden="true" />
+                {user.company.name} · {t(`districts.${user.company.district}`)}
+              </span>
+            )}
           </div>
         </div>
         {lastUpdated && (
