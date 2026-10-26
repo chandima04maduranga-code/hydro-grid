@@ -280,5 +280,243 @@
     "active": "Active",
     "rejected": "Rejected",
     "suspended": "Suspended"
+  },
+  "metrics": {
+    "waterTemp": "Water temperature",
+    "ph": "pH",
+    "ec": "Nutrients (EC)",
+    "dissolvedOxygen": "Dissolved oxygen",
+    "waterLevel": "Reservoir level",
+    "airTemp": "Air temperature",
+    "humidity": "Humidity",
+    "light": "Light",
+    "co2": "CO₂",
+    "substrateMoisture": "Grow bag moisture"
+  },
+  "metricGroups": {
+    "water": "Nutrient solution",
+    "climate": "Greenhouse climate",
+    "root": "Root zone"
+  },
+  "crops": {
+    "lettuce": "Lettuce",
+    "tomato": "Tomato",
+    "strawberry": "Strawberry",
+    "bellPepper": "Bell pepper (capsicum)",
+    "cucumber": "Cucumber",
+    "leafyGreens": "Leafy greens (kankun, gotukola)"
+  },
+  "readingStatus": {
+    "optimal": "Good",
+    "low": "Low",
+    "high": "High",
+    "stale": "No recent data",
+    "inactive": "Night"
+  },
+  "severity": {
+    "warning": "Warning",
+    "critical": "Critical"
+  },
+  "telemetry": {
+    "healthTitle": "Farm health",
+    "healthScore": "Health score",
+    "healthGood": "Healthy",
+    "healthFair": "Needs attention",
+    "healthPoor": "Act now",
+    "actionNeeded": "Action needed",
+    "allGood": "All readings are in range. No action needed right now.",
+    "nodesOnline": "{{online}} of {{total}} nodes online",
+    "online": "Online",
+    "offline": "Offline",
+    "lastSeen": "Last reading {{time}}",
+    "target": "Target {{range}}",
+    "rangeBetween": "{{min}} – {{max}}",
+    "rangeAbove": "above {{min}}",
+    "rangeBelow": "below {{max}}",
+    "now": "Now",
+    "whyItMatters": "Why it matters",
+    "whatToDo": "What to do",
+    "criticalCount": "{{count}} critical",
+    "warningCount": "{{count}} warnings",
+    "nodes": "Sensor nodes",
+    "details": "Details",
+    "back": "Back to dashboard",
+    "history": "Last {{hours}} hours",
+    "noHistory": "No history yet.",
+    "crop": "Crop",
+    "settings": "Node settings",
+    "name": "Node name",
+    "location": "Location",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Node settings saved",
+    "noNodes": "No sensor nodes are reporting yet.",
+    "noNodesHint": "Connect a node, or start the virtual node for this company:",
+    "problemsOnNode": "Problems on this node",
+    "last7Days": "Last 7 days",
+    "notFound": "Sensor node not found.",
+    "targetBand": "Target band",
+    "noAccess": "Only admins and farm managers can change node settings."
+  },
+  "advice": {
+    "waterTemp.high": {
+      "title": "Nutrient water is too warm",
+      "why": "Warm water holds less oxygen, so roots can suffocate and root rot can start.",
+      "steps": [
+        "Shade or cover the reservoir and keep it out of direct sun.",
+        "Add sealed bottles of frozen water, or use a water chiller.",
+        "Make sure the air pump is running to add oxygen."
+      ]
+    },
+    "waterTemp.low": {
+      "title": "Nutrient water is too cold",
+      "why": "Cold water slows root growth and nutrient uptake.",
+      "steps": [
+        "Insulate the reservoir with foam sheets or a cover.",
+        "Use an aquarium heater set to about 20 °C.",
+        "Keep the reservoir off cold floors."
+      ]
+    },
+    "ph.high": {
+      "title": "pH is too high",
+      "why": "Above the target, plants cannot absorb iron and other nutrients, and new leaves turn yellow.",
+      "steps": [
+        "Add pH Down (phosphoric acid) a few ml at a time.",
+        "Run the pump or stir for 15 minutes.",
+        "Test again and repeat until pH is back in range."
+      ]
+    },
+    "ph.low": {
+      "title": "pH is too low",
+      "why": "Acidic water can burn roots and lock out calcium and magnesium.",
+      "steps": [
+        "Add pH Up (potassium hydroxide) a few ml at a time.",
+        "Run the pump or stir for 15 minutes.",
+        "Test again and repeat until pH is back in range."
+      ]
+    },
+    "ec.low": {
+      "title": "Nutrients are too weak",
+      "why": "Plants are using up the fertiliser. Growth slows and leaves turn pale.",
+      "steps": [
+        "Add hydroponic nutrient A and B in equal amounts, following the label dose.",
+        "Mix well and check EC again after 15 minutes.",
+        "Check pH again after adding nutrients."
+      ]
+    },
+    "ec.high": {
+      "title": "Nutrients are too strong",
+      "why": "Too much fertiliser burns roots. Leaf tips turn brown and plants wilt.",
+      "steps": [
+        "Top up the reservoir with clean water to dilute it.",
+        "If EC is still high, replace part of the solution.",
+        "Check that nutrients were not added twice."
+      ]
+    },
+    "dissolvedOxygen.low": {
+      "title": "Roots are short of oxygen",
+      "why": "Without enough oxygen, roots turn brown and rot within hours to days.",
+      "steps": [
+        "Check that the air pump is switched on and running.",
+        "Clean or replace blocked air stones and check the air tubes.",
+        "Cool the water if it is warm."
+      ]
+    },
+    "waterLevel.low": {
+      "title": "Reservoir is running low",
+      "why": "If the pump runs dry, plants lose water and the pump can be damaged.",
+      "steps": [
+        "Top up the reservoir with clean water.",
+        "Check pipes, channels and joints for leaks.",
+        "After topping up, check pH and EC again."
+      ]
+    },
+    "airTemp.high": {
+      "title": "Greenhouse is too hot",
+      "why": "Heat stress causes wilting, flower drop and bitter leafy greens.",
+      "steps": [
+        "Open vents and side curtains, or run the fans.",
+        "Pull a shade net (about 50%) over the roof.",
+        "Use misting during the hottest hours (11 AM to 3 PM)."
+      ]
+    },
+    "airTemp.low": {
+      "title": "Greenhouse is too cold",
+      "why": "Cold slows growth and can damage tender crops.",
+      "steps": [
+        "Close vents and curtains in the evening.",
+        "Seal gaps in the plastic covering.",
+        "Water the floor in the morning, not at night."
+      ]
+    },
+    "humidity.high": {
+      "title": "Humidity is too high",
+      "why": "Damp air encourages fungal diseases such as grey mould and mildew.",
+      "steps": [
+        "Increase ventilation: open vents or run fans.",
+        "Avoid wetting the leaves when watering.",
+        "Remove dead leaves and keep space between plants."
+      ]
+    },
+    "humidity.low": {
+      "title": "Air is too dry",
+      "why": "Plants lose water quickly and leaf edges can burn.",
+      "steps": [
+        "Mist the floor and paths.",
+        "Use a shade net to reduce the sun.",
+        "Make sure the crop has enough water."
+      ]
+    },
+    "light.low": {
+      "title": "Not enough light",
+      "why": "Low light makes plants stretch and slows growth.",
+      "steps": [
+        "Clean dust and algae off the greenhouse roof.",
+        "Remove extra shade nets in cloudy weather.",
+        "Consider LED grow lights for cloudy seasons."
+      ]
+    },
+    "light.high": {
+      "title": "Light is too strong",
+      "why": "Very strong sun can scorch leaves and overheat the greenhouse.",
+      "steps": [
+        "Pull a shade net over the crop at midday.",
+        "Increase ventilation to remove heat."
+      ]
+    },
+    "co2.high": {
+      "title": "CO₂ is building up",
+      "why": "Stale air means poor ventilation. Very high CO₂ is also unsafe for workers.",
+      "steps": [
+        "Open vents or run exhaust fans.",
+        "Make sure fuel heaters or generators vent outside."
+      ]
+    },
+    "co2.low": {
+      "title": "CO₂ is too low",
+      "why": "Plants need CO₂ to grow. It drops when the greenhouse stays closed all day.",
+      "steps": [
+        "Open vents to bring in fresh air.",
+        "Ventilate more in the morning, when plants are most active."
+      ]
+    },
+    "substrateMoisture.low": {
+      "title": "Grow bags are drying out",
+      "why": "Dry roots stop taking up water and nutrients, and plants wilt.",
+      "steps": [
+        "Run an irrigation cycle now.",
+        "Check drippers for blockages.",
+        "Water more often in hot weather."
+      ]
+    },
+    "substrateMoisture.high": {
+      "title": "Grow bags are waterlogged",
+      "why": "Too much water pushes air out of the roots and causes root rot.",
+      "steps": [
+        "Pause irrigation until the medium dries a little.",
+        "Check that drainage holes are not blocked.",
+        "Shorten the irrigation time."
+      ]
+    }
   }
 }
