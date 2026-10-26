@@ -1,0 +1,176 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const Company = require('../models/Company');
+const SensorNode = require('../models/SensorNode');
+const Reading = require('../models/Reading');
+const auth = require('../middleware/auth');
+const requireCompanyUser = require('../middleware/requireCompanyUser');
+const requireRole = require('../middleware/requireRole');
+const { METRICS, METRIC_IDS } = require('../config/metrics');
+const { CROPS, CROP_IDS } = require('../config/crops');
+const { PLANS } = require('../config/plans');
+const { assessNode, rangesFor } = require('../services/advisor');
+
+const router = express.Router();
+
+const NODE_ID_PATTERN = /^[A-Za-z0-9_-]{2,40}$/;
+// A node that has not reported for this long is shown as offline
+const ONLINE_WINDOW_MS = 2 * 60 * 1000;
+const MAX_HISTORY_HOURS = 168;
+
+const serverError = (res, context, err) => {
+  console.error(`${context}:`, err.message);
+  res.status(500).json({ code: 'SERVER_ERROR', message: 'Something went wrong, please try again' });
+};
+
+const withAssessment = (node, now = new Date()) => {
+  const json = node.toJSON();
+  return {
+    ...json,
+    online: Boolean(node.lastSeenAt) && now - node.lastSeenAt <= ONLINE_WINDOW_MS,
+    assessment: assessNode(json, now)
+  };
+};
+
+// @route   POST /api/telemetry
+// @desc    Ingest a batch of readings from one node:
+//          { companyId, nodeId, location?, readings: { ph: 6.1, ec: 1.2, ... } }
+//          Until device API keys arrive (security hardening), a node names its company.
+// @access  Devices
+router.post('/', async (req, res) => {
+  const { companyId, nodeId, location, readings } = req.body;
+
+  if (!mongoose.isValidObjectId(companyId)) {
+    return res.status(400).json({ code: 'COMPANY_NOT_FOUND', message: 'Unknown or inactive company' });
+  }
+  if (typeof nodeId !== 'string' || !NODE_ID_PATTERN.test(nodeId)) {
+    return res.status(400).json({ code: 'INVALID_NODE_ID', message: 'nodeId must be 2-40 letters, digits, _ or -' });
+  }
+
+  const accepted = Object.entries(readings && typeof readings === 'object' ? readings : {})
+    .filter(([metric, value]) => METRICS[metric] && Number.isFinite(value));
+  if (accepted.length === 0) {
+    return res.status(400).json({ code: 'NO_READINGS', message: `Send at least one of: ${METRIC_IDS.join(', ')}` });
+  }
+
+  try {
+    const company = await Company.findOne({ _id: companyId, status: 'active' }).select('plan');
+    if (!company) {
+      return res.status(400).json({ code: 'COMPANY_NOT_FOUND', message: 'Unknown or inactive company' });
+    }
+
+    // New nodes count against the plan's sensor node limit
+    const exists = await SensorNode.exists({ company: company._id, nodeId });
+    const limit = PLANS[company.plan].limits.sensorNodes;
+    if (!exists && limit !== null && (await SensorNode.countDocuments({ company: company._id })) >= limit) {
+      return res.status(403).json({ code: 'PLAN_LIMIT_NODES', message: `The ${company.plan} plan allows ${limit} sensor nodes` });
+    }
+
+    const now = new Date();
+    const latest = Object.fromEntries(accepted.map(([metric, value]) => [`latest.${metric}`, { value, recordedAt: now }]));
+    await SensorNode.updateOne(
+      { company: company._id, nodeId },
+      {
+        $set: { ...latest, lastSeenAt: now },
+        $setOnInsert: { name: nodeId, location: typeof location === 'string' ? location.slice(0, 120) : '' }
+      },
+      { upsert: true }
+    );
+    await Reading.insertMany(accepted.map(([metric, value]) => ({ company: company._id, nodeId, metric, value, recordedAt: now })));
+
+    res.status(202).json({
+      received: accepted.length,
+      ignored: Object.keys(readings).filter((metric) => !accepted.some(([accept]) => accept === metric))
+    });
+  } catch (err) {
+    serverError(res, 'Telemetry ingest error', err);
+  }
+});
+
+// Everything below is for signed-in company users
+router.use(auth, requireCompanyUser);
+
+// @route   GET /api/telemetry/options
+// @desc    Metric catalogue and crop profiles with their target bands
+router.get('/options', (req, res) => {
+  res.json({
+    metrics: Object.fromEntries(METRIC_IDS.map((id) => [id, { unit: METRICS[id].unit, group: METRICS[id].group }])),
+    crops: CROP_IDS.map((id) => ({
+      id,
+      ranges: Object.fromEntries(Object.keys(CROPS[id]).map((metric) => [metric, rangesFor(metric, id)]))
+    }))
+  });
+});
+
+// @route   GET /api/telemetry/nodes
+// @desc    The company's nodes with latest readings, online state and advice
+router.get('/nodes', async (req, res) => {
+  try {
+    const nodes = await SensorNode.find({ company: req.companyId }).sort({ nodeId: 1 });
+    const now = new Date();
+    res.json(nodes.map((node) => withAssessment(node, now)));
+  } catch (err) {
+    serverError(res, 'List nodes error', err);
+  }
+});
+
+// @route   GET /api/telemetry/nodes/:nodeId/history?hours=24
+// @desc    Averaged readings per metric for charts
+router.get('/nodes/:nodeId/history', async (req, res) => {
+  const hours = Math.min(Math.max(Number.parseInt(req.query.hours, 10) || 24, 1), MAX_HISTORY_HOURS);
+  // Fewer, wider buckets for longer periods keeps charts light
+  const binMinutes = hours <= 6 ? 5 : hours <= 24 ? 15 : 60;
+
+  try {
+    const node = await SensorNode.findOne({ company: req.companyId, nodeId: req.params.nodeId });
+    if (!node) return res.status(404).json({ code: 'NODE_NOT_FOUND', message: 'Sensor node not found' });
+
+    const rows = await Reading.aggregate([
+      { $match: { company: req.companyId, nodeId: node.nodeId, recordedAt: { $gte: new Date(Date.now() - hours * 3600 * 1000) } } },
+      {
+        $group: {
+          _id: { metric: '$metric', at: { $dateTrunc: { date: '$recordedAt', unit: 'minute', binSize: binMinutes } } },
+          value: { $avg: '$value' }
+        }
+      },
+      { $sort: { '_id.at': 1 } }
+    ]);
+
+    const series = {};
+    for (const row of rows) {
+      (series[row._id.metric] ||= []).push({ at: row._id.at, value: Math.round(row.value * 100) / 100 });
+    }
+    res.json({ nodeId: node.nodeId, hours, binMinutes, series });
+  } catch (err) {
+    serverError(res, 'Node history error', err);
+  }
+});
+
+// @route   PATCH /api/telemetry/nodes/:nodeId
+// @desc    Rename a node, set its location or crop profile
+// @access  Company admins and farm managers
+router.patch('/nodes/:nodeId', requireRole('admin', 'farm_manager'), async (req, res) => {
+  const { name, location, cropProfile } = req.body;
+  const errors = {};
+  if (name !== undefined && (typeof name !== 'string' || !name.trim() || name.length > 80)) errors.name = 'REQUIRED';
+  if (location !== undefined && (typeof location !== 'string' || location.length > 120)) errors.location = 'REQUIRED';
+  if (cropProfile !== undefined && !CROP_IDS.includes(cropProfile)) errors.cropProfile = 'REQUIRED';
+  if (Object.keys(errors).length > 0) {
+    return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'Please correct the highlighted fields', errors });
+  }
+
+  try {
+    const node = await SensorNode.findOne({ company: req.companyId, nodeId: req.params.nodeId });
+    if (!node) return res.status(404).json({ code: 'NODE_NOT_FOUND', message: 'Sensor node not found' });
+
+    if (name !== undefined) node.name = name.trim();
+    if (location !== undefined) node.location = location.trim();
+    if (cropProfile !== undefined) node.cropProfile = cropProfile;
+    await node.save();
+    res.json(withAssessment(node));
+  } catch (err) {
+    serverError(res, 'Update node error', err);
+  }
+});
+
+module.exports = router;

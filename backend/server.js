@@ -30,7 +30,7 @@ app.use('/api/companies', require('./routes/companies'));
 app.use('/api/platform', require('./routes/platform'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/plants', require('./routes/plants'));
-app.use('/api/sensors', require('./routes/sensorRoutes'));
+app.use('/api/telemetry', require('./routes/telemetry'));
 
 // Health check
 app.get('/api/health', (req, res) => {
