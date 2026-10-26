@@ -12,6 +12,12 @@ if (missingEnv.length > 0) {
   process.exit(1);
 }
 
+// Optional DNS override for the MongoDB SRV lookup (e.g. DNS_SERVERS=8.8.8.8,1.1.1.1).
+// Needed on machines where Node.js cannot use the system resolver.
+if (process.env.DNS_SERVERS) {
+  require('dns').setServers(process.env.DNS_SERVERS.split(',').map((server) => server.trim()));
+}
+
 const app = express();
 
 // Middleware
