@@ -15,6 +15,27 @@ Designed for Sri Lanka: the interface is available in **English and Sinhala**, s
 - **Company roles** – Admin, Farm Manager, Field Officer
 - **English / Sinhala** – switch any time; each user's preferred language is remembered
 - **Live dashboard** – crop systems and IoT telemetry refreshed every few seconds, with the signed-in company shown in the header
+- **Ten hydroponic sensors per node** – water temperature, pH, EC (nutrients), dissolved oxygen, reservoir level, air temperature, humidity, light, CO₂ and grow-bag moisture
+- **Farmer advice** – every reading is judged against crop-specific targets; problems appear in an "Action needed" list with why it matters and numbered steps to fix it (e.g. "Reservoir is running low → top up with clean water, check for leaks, re-check pH and EC"), in English and Sinhala
+- **Farm health score and history charts** – a 0–100 health score per node and farm, and 6-hour / 24-hour / 7-day charts with the target band shaded
+- **Crop profiles** – lettuce, tomato, strawberry, bell pepper, cucumber and local leafy greens (kankun, gotukola, mukunuwenna), each with its own pH, EC and temperature targets
+
+## Sensors and targets
+
+| Sensor            | Unit      | Default target | Notes                                  |
+| ----------------- | --------- | -------------- | -------------------------------------- |
+| Water temperature | °C        | 18 – 24        | Warm water holds less oxygen           |
+| pH                | pH        | 5.5 – 6.5      | Crop specific                          |
+| Nutrients (EC)    | mS/cm     | 1.0 – 1.6      | Crop specific (lettuce 0.8 – 1.2, tomato 2.0 – 3.5) |
+| Dissolved oxygen  | mg/L      | above 6        | Drops when the air pump fails          |
+| Reservoir level   | %         | above 40       |                                        |
+| Air temperature   | °C        | 18 – 28        | Crop specific                          |
+| Humidity          | %         | 50 – 75        |                                        |
+| Light             | µmol/m²/s | 200 – 700      | Judged only between 7 AM and 6 PM (Sri Lanka time) |
+| CO₂               | ppm       | 400 – 1200     |                                        |
+| Grow bag moisture | %         | 40 – 70        | For coco peat / grow-bag systems       |
+
+Targets live in `backend/config/metrics.js` and `backend/config/crops.js`; the advisor is `backend/services/advisor.js`. They follow general hydroponic guidance and should be tuned with an agronomist for each farm.
 
 ## Plans
 
@@ -91,11 +112,13 @@ Hydro_Grid/
 
 5. **Register a company** on the login page (**Register your company**), then approve it as the platform admin.
 
-6. **Start the virtual IoT node** for a company (optional, third terminal)
+6. **Start virtual IoT nodes** for a company (optional, third terminal)
 
    ```bash
-   npm run simulate -- <companyId>
+   npm run simulate -- <companyId> 2 10
    ```
+
+   Starts 2 nodes reporting every 10 seconds. The simulator follows Sri Lanka time (warm afternoons, humid nights), drifts reservoir level, pH and EC faster than real life so advice appears within minutes, and occasionally simulates an air-pump failure. The company id is shown on the dashboard when no nodes are reporting yet.
 
 ### Upgrading an existing database
 
@@ -125,8 +148,11 @@ Authenticated requests send `Authorization: Bearer <token>`. Errors return a mac
 | PATCH  | `/api/users/:id`                           | Company admin  | Change role, disable or re-enable                  |
 | GET    | `/api/plants`                              | Company user   | List the company's crop systems                    |
 | POST   | `/api/plants`                              | Admin, manager | Create a crop system                               |
-| GET    | `/api/sensors`                             | Company user   | List the company's latest sensor readings          |
-| POST   | `/api/sensors/telemetry`                   | Public         | Ingest IoT telemetry for a company                 |
+| POST   | `/api/telemetry`                           | Devices        | Ingest a batch of readings from one node           |
+| GET    | `/api/telemetry/options`                   | Company user   | Metric units and crop target bands                 |
+| GET    | `/api/telemetry/nodes`                     | Company user   | Nodes with latest readings, advice and health      |
+| GET    | `/api/telemetry/nodes/:nodeId/history`     | Company user   | Averaged history for charts (`?hours=6/24/168`)    |
+| PATCH  | `/api/telemetry/nodes/:nodeId`             | Admin, manager | Set node name, location and crop profile           |
 | GET    | `/api/platform/summary`                    | Platform admin | Companies by status and plan, user total           |
 | GET    | `/api/platform/companies?status=`          | Platform admin | Companies with admin contact and staff count       |
 | PATCH  | `/api/platform/companies/:id/approve`      | Platform admin | Activate a company (starts a trial)                |
@@ -151,6 +177,6 @@ Authenticated requests send `Authorization: Bearer <token>`. Errors return a mac
 - [ ] Subscription payments (PayHere sandbox), trial expiry and plan limits
 - [ ] Greenhouse management (e.g. "Nuwara Eliya GH-01")
 - [ ] Plant management (full CRUD with validation)
-- [ ] Multi-sensor IoT telemetry with history charts
+- [x] Multi-sensor IoT telemetry with farmer advice, health score and history charts
 - [ ] Security hardening (device API keys, rate limiting)
 - [ ] Automated tests, Docker and CI/CD deployment
