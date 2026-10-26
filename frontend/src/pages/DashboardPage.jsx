@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Activity, Droplets, Leaf, MapPin, Sprout, Thermometer } from "lucide-react";
+import { Activity, CalendarDays, Droplet, Droplets, Leaf, MapPin, Sprout, Thermometer } from "lucide-react";
 import apiClient from "../api/axiosConfig";
 import { useAuth } from "../context/AuthContext";
 import { RoleBadge } from "../components/common/Badges";
@@ -8,10 +8,48 @@ import { formatDateTime } from "../utils/format";
 
 const REFRESH_MS = 3000;
 
-const SensorIcon = ({ type }) =>
-  /moisture|humidity|water/i.test(type)
-    ? <Droplets className="h-6 w-6 text-hydroCyan" aria-hidden="true" />
-    : <Thermometer className="h-6 w-6 text-clay-500" aria-hidden="true" />;
+const HEALTH_STYLES = {
+  Healthy: { pill: "bg-leaf-50 text-leaf-700 ring-leaf-500/20", dot: "bg-leaf-500" },
+  "Nutrient Warning": { pill: "bg-gold-100 text-gold-600 ring-gold-400/30", dot: "bg-gold-500" },
+  Critical: { pill: "bg-red-50 text-red-700 ring-red-500/20", dot: "bg-red-500" }
+};
+
+// Temperature readings (including water temperature) get the thermometer style
+const isWaterReading = (type) => !/temp/i.test(type) && /moisture|humidity|water|level/i.test(type);
+
+// Card shell: frosted panel with a coloured accent bar on top
+const Panel = ({ accent, icon: Icon, iconClasses, title, subtitle, count, countLabel, countClasses, children }) => (
+  <section className="glass overflow-hidden rounded-3xl shadow-xl shadow-tea-900/10">
+    <div className={`h-1.5 ${accent}`} />
+    <div className="p-5 sm:p-6">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${iconClasses}`}>
+            <Icon className="h-7 w-7" aria-hidden="true" />
+          </span>
+          <div>
+            <h2 className="text-xl font-extrabold text-gray-900">{title}</h2>
+            <p className="text-sm text-gray-500">{subtitle}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2.5 rounded-2xl border border-white bg-white/80 px-3 py-2 shadow-sm">
+          <span className={`flex h-9 w-9 items-center justify-center rounded-full text-base font-extrabold text-white ${countClasses}`}>
+            {count}
+          </span>
+          <span className="max-w-20 text-xs font-semibold leading-tight text-gray-600">{countLabel}</span>
+        </div>
+      </div>
+      {children}
+    </div>
+  </section>
+);
+
+const EmptyState = ({ icon: Icon, text, tone }) => (
+  <div className={`flex flex-col items-center rounded-2xl border border-dashed bg-white/60 py-12 text-center ${tone}`}>
+    <Icon className="h-10 w-10" aria-hidden="true" />
+    <p className="mt-3 text-sm text-gray-500">{text}</p>
+  </div>
+);
 
 const DashboardPage = () => {
   const { t, i18n } = useTranslation();
@@ -45,19 +83,18 @@ const DashboardPage = () => {
 
   return (
     <div>
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">{t("dashboard.greeting", { name: user.name })}</h1>
-          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-500">
+          <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">{t("dashboard.greeting", { name: user.name })}</h1>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-gray-600">
             <RoleBadge role={user.role} />
-            <span>{t("dashboard.subtitle")}</span>
-          </p>
+          </div>
         </div>
         {lastUpdated && (
-          <p className="flex items-center gap-2 text-xs text-gray-500">
+          <p className="glass flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-gray-600">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-tea-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-tea-500" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-leaf-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-leaf-500" />
             </span>
             {t("dashboard.updated", { time: formatDateTime(lastUpdated, i18n.language) })}
           </p>
@@ -65,87 +102,104 @@ const DashboardPage = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border-t-4 border-tea-600 bg-white p-6 shadow-sm">
-          <div className="mb-6 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <div className="rounded-full bg-tea-50 p-2"><Leaf className="h-5 w-5 text-tea-700" aria-hidden="true" /></div>
-              <h2 className="text-lg font-bold text-gray-800">{t("dashboard.crops")}</h2>
-            </div>
-            <span className="rounded-full bg-tea-50 px-3 py-1 text-sm font-bold text-tea-700">
-              {t("dashboard.systemsCount", { count: plants.length })}
-            </span>
-          </div>
-
+        <Panel
+          accent="bg-gradient-to-r from-leaf-500 to-tea-600"
+          icon={Leaf}
+          iconClasses="bg-leaf-50 text-leaf-600"
+          title={t("dashboard.crops")}
+          subtitle={t("dashboard.cropsSubtitle")}
+          count={plants.length}
+          countLabel={t("dashboard.activeSystems")}
+          countClasses="bg-leaf-600"
+        >
           {plants.length === 0 ? (
-            <div className="flex flex-col items-center rounded-xl border border-dashed border-tea-200 py-12 text-center">
-              <Sprout className="h-10 w-10 text-tea-300" aria-hidden="true" />
-              <p className="mt-3 text-sm text-gray-500">{t("dashboard.noPlants")}</p>
-            </div>
+            <EmptyState icon={Sprout} text={t("dashboard.noPlants")} tone="border-leaf-400/40 text-leaf-400" />
           ) : (
             <ul className="space-y-4">
-              {plants.map((plant) => (
-                <li key={plant._id} className="flex gap-4 rounded-xl border border-gray-100 p-4 transition hover:shadow-md">
-                  <img src={plant.image} alt={plant.name} className="h-24 w-28 shrink-0 rounded-lg object-cover" />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <h3 className="font-bold text-gray-900">{plant.name}</h3>
-                        <p className="text-sm italic text-gray-500">{plant.species}</p>
+              {plants.map((plant) => {
+                const health = HEALTH_STYLES[plant.healthStatus] || HEALTH_STYLES.Healthy;
+                return (
+                  <li key={plant._id} className="flex flex-col gap-4 rounded-2xl bg-white/90 p-4 shadow-sm sm:flex-row">
+                    <img src={plant.image} alt={plant.name} className="h-36 w-full shrink-0 rounded-xl object-cover sm:h-28 sm:w-36" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900">{plant.name}</h3>
+                          <p className="text-sm italic text-gray-500">({plant.species})</p>
+                        </div>
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ring-1 ring-inset ${health.pill}`}>
+                          <span className={`h-2 w-2 rounded-full ${health.dot}`} />
+                          {plant.healthStatus}
+                        </span>
                       </div>
-                      <span className={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-bold ${
-                        plant.healthStatus === "Healthy" ? "bg-tea-50 text-tea-700" : "bg-gold-100 text-gold-600"
-                      }`}>
-                        {plant.healthStatus}
-                      </span>
+                      <dl className="mt-3 space-y-1.5 text-sm">
+                        {[
+                          { icon: Sprout, label: t("dashboard.cropType"), value: plant.cropType, color: "text-leaf-600" },
+                          { icon: Droplet, label: t("dashboard.systemId"), value: plant.systemId, color: "text-cyan-600" },
+                          { icon: CalendarDays, label: t("dashboard.growthStage"), value: plant.growthStage, color: "text-gray-500" }
+                        ].map(({ icon: Icon, label, value, color }) => (
+                          <div key={label} className="grid grid-cols-[1.25rem_7.5rem_1fr] items-center gap-2">
+                            <Icon className={`h-4 w-4 ${color}`} aria-hidden="true" />
+                            <dt className="text-gray-500">{label}</dt>
+                            <dd className="font-medium text-gray-800">{value}</dd>
+                          </div>
+                        ))}
+                      </dl>
                     </div>
-                    <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-gray-600">
-                      <dt className="text-gray-400">{t("dashboard.cropType")}</dt><dd className="font-medium">{plant.cropType}</dd>
-                      <dt className="text-gray-400">{t("dashboard.systemId")}</dt><dd className="font-medium">{plant.systemId}</dd>
-                      <dt className="text-gray-400">{t("dashboard.growthStage")}</dt><dd className="font-medium">{plant.growthStage}</dd>
-                    </dl>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           )}
-        </section>
+        </Panel>
 
-        <section className="rounded-2xl border-t-4 border-hydroCyan bg-white p-6 shadow-sm">
-          <div className="mb-6 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <div className="rounded-full bg-hydroLightCyan p-2"><Activity className="h-5 w-5 text-hydroCyan" aria-hidden="true" /></div>
-              <h2 className="text-lg font-bold text-gray-800">{t("dashboard.telemetry")}</h2>
-            </div>
-            <span className="rounded-full bg-hydroLightCyan px-3 py-1 text-sm font-bold text-hydroCyan">
-              {t("dashboard.nodesCount", { count: sensors.length })}
-            </span>
-          </div>
-
+        <Panel
+          accent="bg-gradient-to-r from-cyan-500 to-hydroCyan"
+          icon={Activity}
+          iconClasses="bg-cyan-50 text-cyan-600"
+          title={t("dashboard.telemetry")}
+          subtitle={t("dashboard.telemetrySubtitle")}
+          count={sensors.length}
+          countLabel={t("dashboard.sensorNodes")}
+          countClasses="bg-cyan-600"
+        >
           {sensors.length === 0 ? (
-            <div className="flex flex-col items-center rounded-xl border border-dashed border-cyan-200 py-12 text-center">
-              <Activity className="h-10 w-10 text-cyan-200" aria-hidden="true" />
-              <p className="mt-3 text-sm text-gray-500">{t("dashboard.noTelemetry")}</p>
-            </div>
+            <EmptyState icon={Activity} text={t("dashboard.noTelemetry")} tone="border-cyan-300/50 text-cyan-300" />
           ) : (
             <ul className="space-y-4">
-              {sensors.map((sensor) => (
-                <li key={sensor._id} className="flex items-center gap-4 rounded-xl border border-gray-100 p-5">
-                  <div className="rounded-full bg-hydroLightCyan p-3"><SensorIcon type={sensor.type} /></div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-gray-700">{sensor.type}</p>
-                    <p className="mt-0.5 text-2xl font-extrabold text-hydroCyan">
-                      {sensor.value} <span className="text-base font-semibold">{sensor.unit}</span>
-                    </p>
-                    <p className="mt-1 flex items-center gap-1 text-xs text-gray-400">
-                      <MapPin className="h-3 w-3" aria-hidden="true" />
-                      {t("dashboard.location")}: {sensor.location} · {sensor.hardwareId}
-                    </p>
-                  </div>
-                </li>
-              ))}
+              {sensors.map((sensor) => {
+                const water = isWaterReading(sensor.type);
+                const Icon = water ? Droplets : Thermometer;
+                return (
+                  <li key={sensor._id} className="rounded-2xl bg-white/90 p-5 shadow-sm">
+                    <div className="flex items-start gap-4">
+                      <span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${water ? "bg-cyan-50 text-cyan-600" : "bg-red-50 text-red-500"}`}>
+                        <Icon className="h-7 w-7" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <h3 className="text-lg font-bold text-gray-900">{sensor.type}</h3>
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-leaf-50 px-3 py-1 text-xs font-bold text-leaf-700 ring-1 ring-inset ring-leaf-500/20">
+                            <span className="h-2 w-2 animate-pulse rounded-full bg-leaf-500" />
+                            {t("dashboard.live")}
+                          </span>
+                        </div>
+                        <p className={`mt-2 text-4xl font-extrabold tracking-tight ${water ? "text-cyan-700" : "text-red-600"}`}>
+                          {sensor.value}
+                          <span className="ml-1 text-xl font-bold">{sensor.unit}</span>
+                        </p>
+                        <p className="mt-2 flex items-center gap-1.5 text-xs text-gray-500">
+                          <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                          {sensor.location} · <span className="font-semibold text-gray-700">{sensor.hardwareId}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
-        </section>
+        </Panel>
       </div>
     </div>
   );

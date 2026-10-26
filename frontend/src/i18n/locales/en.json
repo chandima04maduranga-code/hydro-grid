@@ -103,7 +103,9 @@
     "dashboard": "Dashboard",
     "users": "Users",
     "logout": "Log out",
-    "slTime": "Sri Lanka time"
+    "slTime": "Sri Lanka time",
+    "controlPanel": "Control panel",
+    "pendingApprovals": "{{count}} pending approvals"
   },
   "users": {
     "title": "User management",
@@ -140,10 +142,13 @@
     "greeting": "Ayubowan, {{name}}",
     "subtitle": "Monitor • Manage • Grow smarter",
     "crops": "Active crop systems",
-    "systemsCount": "{{count}} systems",
+    "cropsSubtitle": "Current status of your hydroponic crops",
+    "activeSystems": "Active systems",
     "noPlants": "No crop systems registered yet.",
-    "telemetry": "Live telemetry",
-    "nodesCount": "{{count}} nodes",
+    "telemetry": "Hydro telemetry",
+    "telemetrySubtitle": "Real-time readings from your sensor nodes",
+    "sensorNodes": "Sensor nodes",
+    "live": "Live",
     "noTelemetry": "No telemetry received yet.",
     "location": "Location",
     "cropType": "Crop type",

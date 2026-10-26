@@ -118,8 +118,8 @@ const UsersPage = () => {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{t("users.title")}</h1>
-        <p className="mt-1 text-sm text-gray-500">{t("users.subtitle")}</p>
+        <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">{t("users.title")}</h1>
+        <p className="mt-1 text-sm text-gray-600">{t("users.subtitle")}</p>
       </div>
 
       {notice && (
@@ -130,7 +130,7 @@ const UsersPage = () => {
         </div>
       )}
 
-      <div role="tablist" className="mb-5 inline-flex rounded-xl border border-gray-200 bg-white p-1">
+      <div role="tablist" className="glass mb-5 inline-flex rounded-xl p-1 shadow-sm">
         {tabs.map(({ key, label, count }) => (
           <button
             key={key}
@@ -139,7 +139,7 @@ const UsersPage = () => {
             aria-selected={tab === key}
             onClick={() => setTab(key)}
             className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
-              tab === key ? "bg-tea-700 text-white" : "text-gray-500 hover:text-gray-800"
+              tab === key ? "bg-leaf-600 text-white shadow-sm" : "text-gray-600 hover:text-gray-900"
             }`}
           >
             {label}
@@ -160,7 +160,7 @@ const UsersPage = () => {
             {pending.map((person) => (
               <li
                 key={person._id}
-                className="flex flex-col gap-4 rounded-2xl border border-gold-300/60 bg-white p-5 shadow-sm lg:flex-row lg:items-center"
+                className="glass flex flex-col gap-4 rounded-2xl p-5 shadow-lg shadow-tea-900/5 ring-1 ring-gold-300/70 lg:flex-row lg:items-center"
               >
                 <div className="flex-1">
                   <UserIdentity person={person} youLabel={t("users.you")} />
@@ -186,7 +186,7 @@ const UsersPage = () => {
                     type="button"
                     onClick={() => approve(person)}
                     disabled={busyId === person._id}
-                    className="flex items-center gap-1.5 rounded-xl bg-tea-700 px-4 py-2 text-sm font-semibold text-white hover:bg-tea-800 disabled:opacity-60"
+                    className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-leaf-500 to-tea-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-leaf-500/25 hover:from-leaf-600 hover:to-tea-700 disabled:opacity-60"
                   >
                     <Check className="h-4 w-4" aria-hidden="true" />
                     {t("users.approve")}
@@ -208,9 +208,9 @@ const UsersPage = () => {
       ) : reviewed.length === 0 ? (
         <EmptyState text={t("users.emptyAll")} />
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <div className="glass overflow-x-auto rounded-2xl shadow-xl shadow-tea-900/10">
           <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="border-b border-gray-100 bg-tea-50/60 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <thead className="border-b border-white/70 bg-white/50 text-xs font-semibold uppercase tracking-wide text-gray-500">
               <tr>
                 <th scope="col" className="px-5 py-3">{t("users.columns.user")}</th>
                 <th scope="col" className="px-5 py-3">{t("users.columns.role")}</th>
@@ -219,7 +219,7 @@ const UsersPage = () => {
                 <th scope="col" className="px-5 py-3 text-right">{t("users.columns.actions")}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-white/70">
               {reviewed.map((person) => {
                 const isSelf = person._id === currentUser._id;
                 const editable = !isSelf && ["active", "disabled"].includes(person.status);
@@ -296,8 +296,8 @@ const UsersPage = () => {
 };
 
 const EmptyState = ({ text }) => (
-  <div className="flex flex-col items-center rounded-2xl border border-dashed border-tea-200 bg-white/60 px-6 py-14 text-center">
-    <Inbox className="h-10 w-10 text-tea-300" aria-hidden="true" />
+  <div className="glass flex flex-col items-center rounded-2xl border-dashed px-6 py-14 text-center">
+    <Inbox className="h-10 w-10 text-leaf-400" aria-hidden="true" />
     <p className="mt-3 max-w-sm text-sm text-gray-500">{text}</p>
   </div>
 );
