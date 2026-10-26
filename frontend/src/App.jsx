@@ -1,16 +1,12 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import AuthProvider from "./context/AuthProvider";
-import { useAuth } from "./context/AuthContext";
 import { GuestOnly, RequireAuth } from "./components/auth/RouteGuards";
+import AppLayout from "./components/layout/AppLayout";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import DashboardPage from "./pages/DashboardPage";
+import UsersPage from "./pages/UsersPage";
 import NotFoundPage from "./pages/NotFoundPage";
-import Dashboard from "./components/dashboard/Dashboard";
-
-const DashboardPage = () => {
-  const { logout } = useAuth();
-  return <Dashboard handleLogout={logout} />;
-};
 
 const App = () => (
   <BrowserRouter>
@@ -22,7 +18,12 @@ const App = () => (
         </Route>
 
         <Route element={<RequireAuth />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route element={<RequireAuth roles={["admin"]} />}>
+              <Route path="/users" element={<UsersPage />} />
+            </Route>
+          </Route>
         </Route>
 
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
