@@ -6,7 +6,8 @@ const requireRole = require('../middleware/requireRole');
 
 const router = express.Router();
 
-// Every route in this file is admin-only
+// Every route in this file is for company admins, and only ever touches
+// users of the admin's own company
 router.use(auth, requireRole('admin'));
 
 const serverError = (res, context, err) => {
@@ -24,7 +25,8 @@ const loadTargetUser = async (req, res) => {
     res.status(400).json({ code: 'CANNOT_CHANGE_SELF', message: 'You cannot change your own role or status' });
     return null;
   }
-  const user = await User.findById(req.params.id);
+  // Scoping by company means another company's user is simply "not found"
+  const user = await User.findOne({ _id: req.params.id, company: req.companyId });
   if (!user) {
     res.status(404).json({ code: 'USER_NOT_FOUND', message: 'User not found' });
     return null;
@@ -38,10 +40,10 @@ const markReviewed = (user, admin) => {
 };
 
 // @route   GET /api/users?status=pending
-// @desc    List users, optionally filtered by status
+// @desc    List the company's users, optionally filtered by status
 // @access  Admin
 router.get('/', async (req, res) => {
-  const filter = {};
+  const filter = { company: req.companyId };
   if (req.query.status) {
     if (!User.STATUSES.includes(req.query.status)) {
       return res.status(400).json({ code: 'INVALID_STATUS', message: 'Unknown status filter' });
@@ -62,7 +64,7 @@ router.get('/', async (req, res) => {
 // @access  Admin
 router.patch('/:id/approve', async (req, res) => {
   const { role } = req.body;
-  if (!User.ROLES.includes(role)) {
+  if (!User.COMPANY_ROLES.includes(role)) {
     return res.status(400).json({ code: 'INVALID_ROLE', message: 'Choose a valid role' });
   }
 
@@ -109,7 +111,7 @@ router.patch('/:id/reject', async (req, res) => {
 router.patch('/:id', async (req, res) => {
   const { role, status } = req.body;
 
-  if (role !== undefined && !User.ROLES.includes(role)) {
+  if (role !== undefined && !User.COMPANY_ROLES.includes(role)) {
     return res.status(400).json({ code: 'INVALID_ROLE', message: 'Choose a valid role' });
   }
   if (status !== undefined && !['active', 'disabled'].includes(status)) {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Bell, LayoutDashboard, LogOut, Users } from "lucide-react";
+import { Bell, Building2, LayoutDashboard, LogOut, ShieldCheck, Users } from "lucide-react";
 import apiClient from "../../api/axiosConfig";
 import { useAuth } from "../../context/AuthContext";
 import Avatar from "../common/Avatar";
@@ -10,44 +10,58 @@ import LeafLogo from "../common/LeafLogo";
 import ColomboClock from "../common/ColomboClock";
 import LanguageSwitcher from "../common/LanguageSwitcher";
 import { RoleBadge } from "../common/Badges";
-import { USERS_CHANGED_EVENT } from "../../utils/events";
+import { COMPANIES_CHANGED_EVENT, USERS_CHANGED_EVENT } from "../../utils/events";
 import greenhousePhoto from "../../assets/photos/greenhouse-strawberries.webp";
 
 const PENDING_REFRESH_MS = 60000;
 
-// Number of accounts waiting for approval, shown as a badge for admins
-const usePendingCount = (enabled) => {
+// What the approvals bell counts: staff requests for a company admin,
+// company registrations for a platform admin
+const PENDING_SOURCES = {
+  admin: {
+    path: "/users",
+    event: USERS_CHANGED_EVENT,
+    load: () => apiClient.get("/users", { params: { status: "pending" } }).then(({ data }) => data.length)
+  },
+  platform_admin: {
+    path: "/platform/companies",
+    event: COMPANIES_CHANGED_EVENT,
+    load: () => apiClient.get("/platform/summary").then(({ data }) => data.companies.pending)
+  }
+};
+
+const usePendingCount = (source) => {
   const location = useLocation();
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    if (!enabled) return undefined;
-    const load = () =>
-      apiClient.get("/users", { params: { status: "pending" } })
-        .then(({ data }) => setCount(data.length))
-        .catch(() => {});
+    if (!source) return undefined;
+    const load = () => source.load().then(setCount).catch(() => {});
     load();
     const timer = setInterval(load, PENDING_REFRESH_MS);
-    window.addEventListener(USERS_CHANGED_EVENT, load);
+    window.addEventListener(source.event, load);
     return () => {
       clearInterval(timer);
-      window.removeEventListener(USERS_CHANGED_EVENT, load);
+      window.removeEventListener(source.event, load);
     };
-  }, [enabled, location.pathname]);
+  }, [source, location.pathname]);
 
-  return enabled ? count : 0;
+  return source ? count : 0;
 };
 
 const AppLayout = () => {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
-  const isAdmin = user.role === "admin";
-  const pendingCount = usePendingCount(isAdmin);
+  const isPlatformAdmin = user.role === "platform_admin";
+  const pendingSource = PENDING_SOURCES[user.role];
+  const pendingCount = usePendingCount(pendingSource);
 
-  const navItems = [
-    { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
-    ...(isAdmin ? [{ to: "/users", label: t("nav.users"), icon: Users }] : [])
-  ];
+  const navItems = isPlatformAdmin
+    ? [{ to: "/platform/companies", label: t("nav.companies"), icon: Building2 }]
+    : [
+      { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
+      ...(user.role === "admin" ? [{ to: "/users", label: t("nav.users"), icon: Users }] : [])
+    ];
 
   return (
     <div className="relative min-h-screen">
@@ -60,7 +74,7 @@ const AppLayout = () => {
       <header className="sticky top-0 z-30 px-3 pt-3 sm:px-6 sm:pt-5">
         <div className="glass mx-auto max-w-7xl overflow-hidden rounded-2xl shadow-lg shadow-tea-900/10">
           <div className="flex items-center gap-3 px-4 py-3 sm:gap-5 sm:px-6">
-            <Link to="/dashboard" className="shrink-0">
+            <Link to="/" className="shrink-0">
               <span className="hidden sm:block"><BrandMark /></span>
               <span className="sm:hidden"><LeafLogo className="h-9 w-9" /></span>
             </Link>
@@ -73,9 +87,9 @@ const AppLayout = () => {
             <div className="ml-auto flex items-center gap-2 sm:gap-3 xl:ml-0">
               <ColomboClock className="hidden lg:flex" />
               <LanguageSwitcher />
-              {isAdmin && (
+              {pendingSource && (
                 <Link
-                  to="/users"
+                  to={pendingSource.path}
                   className="relative rounded-full p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-800"
                   aria-label={t("nav.pendingApprovals", { count: pendingCount })}
                   title={t("nav.pendingApprovals", { count: pendingCount })}
@@ -121,6 +135,24 @@ const AppLayout = () => {
                 {label}
               </NavLink>
             ))}
+
+            {/* Which company (workspace) this session belongs to */}
+            <span
+              className={`ml-auto inline-flex min-w-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold ${
+                isPlatformAdmin ? "bg-tea-800 text-white" : "bg-white/80 text-tea-800 ring-1 ring-leaf-500/30"
+              }`}
+              title={isPlatformAdmin ? t("nav.platform") : user.company?.name}
+            >
+              {isPlatformAdmin
+                ? <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-leaf-400" aria-hidden="true" />
+                : <Building2 className="h-3.5 w-3.5 shrink-0 text-leaf-600" aria-hidden="true" />}
+              <span className="truncate">
+                {isPlatformAdmin ? t("nav.platform") : user.company?.name}
+              </span>
+              {!isPlatformAdmin && user.company?.district && (
+                <span className="hidden font-medium text-gray-500 sm:inline">· {t(`districts.${user.company.district}`)}</span>
+              )}
+            </span>
           </nav>
           <div className="dumbara-band opacity-70" />
         </div>

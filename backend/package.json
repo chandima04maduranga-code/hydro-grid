@@ -7,7 +7,7 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "simulate": "node scripts/virtual_iot_node.js",
-    "create-admin": "node scripts/createAdmin.js"
+    "create-platform-admin": "node scripts/createPlatformAdmin.js"
   },
   "keywords": [],
   "author": "",

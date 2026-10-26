@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, CircleCheck, LoaderCircle, Lock, Mail, Phone, Send, User } from "lucide-react";
+import { ArrowLeft, Building2, CircleCheck, LoaderCircle, Lock, Mail, Phone, Send, User } from "lucide-react";
+import SelectField from "../components/common/SelectField";
+import { readLastCompany, saveLastCompany, useCompanies } from "../hooks/useCompanies";
 import AuthShell from "../components/auth/AuthShell";
 import AuthCard from "../components/auth/AuthCard";
 import Alert from "../components/common/Alert";
@@ -15,8 +17,10 @@ import teaPhoto from "../assets/photos/haputale-tea-leaves.webp";
 const RegisterPage = () => {
   const { t, i18n } = useTranslation();
   const { register } = useAuth();
+  const { companies } = useCompanies();
 
   const [form, setForm] = useState({
+    companyId: readLastCompany() === "platform" ? "" : readLastCompany(),
     name: "",
     email: "",
     phone: "",
@@ -48,10 +52,12 @@ const RegisterPage = () => {
     try {
       const { confirm: _confirm, ...details } = form;
       const user = await register(details);
+      saveLastCompany(form.companyId);
       setRegisteredName(user.name);
     } catch (error) {
       setErrorCode(getErrorCode(error));
-      setFieldErrors(error.response?.data?.errors || {});
+      const { company, ...serverErrors } = error.response?.data?.errors || {};
+      setFieldErrors(company ? { ...serverErrors, companyId: "REQUIRED_COMPANY" } : serverErrors);
     } finally {
       setSubmitting(false);
     }
@@ -88,6 +94,21 @@ const RegisterPage = () => {
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {errorCode && <Alert tone="error">{t(`errors.${errorCode}`, { defaultValue: t("errors.default") })}</Alert>}
 
+          <SelectField
+            id="companyId"
+            label={t("register.company")}
+            icon={Building2}
+            value={form.companyId}
+            onChange={update("companyId")}
+            error={fieldError("companyId")}
+          >
+            <option value="" disabled>{t("register.chooseCompany")}</option>
+            {companies.map((company) => (
+              <option key={company._id} value={company._id}>
+                {company.name} · {t(`districts.${company.district}`)}
+              </option>
+            ))}
+          </SelectField>
           <FormField
             id="name"
             label={t("register.name")}

@@ -26,6 +26,8 @@ app.use(express.json());
 
 // Define Routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/companies', require('./routes/companies'));
+app.use('/api/platform', require('./routes/platform'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/plants', require('./routes/plants'));
 app.use('/api/sensors', require('./routes/sensorRoutes'));

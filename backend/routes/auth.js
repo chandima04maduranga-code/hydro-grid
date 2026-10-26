@@ -1,8 +1,11 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const User = require('../models/User');
+const Company = require('../models/Company');
 const auth = require('../middleware/auth');
+const { COMPANY_FIELDS } = require('../middleware/auth');
 const {
   isNonEmptyString,
   isValidEmail,
@@ -16,8 +19,18 @@ const router = express.Router();
 const TOKEN_TTL = '8h';
 const BCRYPT_ROUNDS = 12;
 
+// Login picker value for platform administrators (who belong to no company)
+const PLATFORM_LOGIN = 'platform';
+
 const signToken = (user) =>
-  jwt.sign({ sub: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: TOKEN_TTL });
+  jwt.sign(
+    { sub: user.id, role: user.role, company: user.company?._id?.toString() },
+    process.env.JWT_SECRET,
+    { expiresIn: TOKEN_TTL }
+  );
+
+const invalidCredentials = (res, status = 401) =>
+  res.status(status).json({ code: 'INVALID_CREDENTIALS', message: 'Invalid company, email or password' });
 
 const validationError = (res, errors) =>
   res.status(400).json({ code: 'VALIDATION_ERROR', message: 'Please correct the highlighted fields', errors });
@@ -28,12 +41,14 @@ const serverError = (res, context, err) => {
 };
 
 // @route   POST /api/auth/register
-// @desc    Request an account. It stays pending until an admin approves it.
+// @desc    Request an account in a company. It stays pending until that
+//          company's admin approves it.
 // @access  Public
 router.post('/register', async (req, res) => {
-  const { name, email, phone, password, preferredLanguage } = req.body;
+  const { companyId, name, email, phone, password, preferredLanguage } = req.body;
 
   const errors = {};
+  if (!mongoose.isValidObjectId(companyId)) errors.company = 'REQUIRED';
   if (!isNonEmptyString(name)) errors.name = 'REQUIRED';
   if (!isValidEmail(email)) errors.email = 'INVALID_EMAIL';
   if (phone && !isValidLkMobile(phone)) errors.phone = 'INVALID_PHONE';
@@ -41,14 +56,20 @@ router.post('/register', async (req, res) => {
   if (Object.keys(errors).length > 0) return validationError(res, errors);
 
   try {
+    const company = await Company.findOne({ _id: companyId, status: 'active' });
+    if (!company) {
+      return res.status(400).json({ code: 'COMPANY_NOT_FOUND', message: 'Choose an active company', errors: { company: 'REQUIRED' } });
+    }
+
     const normalisedEmail = email.trim().toLowerCase();
     if (await User.exists({ email: normalisedEmail })) {
       return res.status(409).json({ code: 'EMAIL_TAKEN', message: 'An account with this email already exists' });
     }
 
     // Role and status are never taken from the request: new accounts are
-    // always pending field officers until an admin reviews them.
+    // always pending field officers until their company admin reviews them.
     const user = await User.create({
+      company: company._id,
       name: name.trim(),
       email: normalisedEmail,
       phone: phone ? normaliseLkMobile(phone) : '',
@@ -67,21 +88,38 @@ router.post('/register', async (req, res) => {
 });
 
 // @route   POST /api/auth/login
-// @desc    Log in and receive a JWT
+// @desc    Log in to a company (or to the platform) and receive a JWT
 // @access  Public
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { companyId, email, password } = req.body;
 
-  if (!isValidEmail(email) || !isNonEmptyString(password)) {
-    return res.status(400).json({ code: 'INVALID_CREDENTIALS', message: 'Invalid email or password' });
+  const validCompany = companyId === PLATFORM_LOGIN || mongoose.isValidObjectId(companyId);
+  if (!validCompany || !isValidEmail(email) || !isNonEmptyString(password)) {
+    return invalidCredentials(res, 400);
   }
 
   try {
-    const user = await User.findOne({ email: email.trim().toLowerCase() }).select('+password');
+    const user = await User.findOne({ email: email.trim().toLowerCase() })
+      .select('+password')
+      .populate('company', COMPANY_FIELDS);
 
-    // Same response for unknown email and wrong password, so accounts can't be discovered
+    // Same response for unknown email, wrong password or wrong company,
+    // so accounts and company memberships can't be discovered
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ code: 'INVALID_CREDENTIALS', message: 'Invalid email or password' });
+      return invalidCredentials(res);
+    }
+    const belongsToChoice = companyId === PLATFORM_LOGIN
+      ? user.role === 'platform_admin'
+      : String(user.company?._id) === String(companyId);
+    if (!belongsToChoice) {
+      return invalidCredentials(res);
+    }
+
+    if (user.role !== 'platform_admin' && user.company.status !== 'active') {
+      return res.status(403).json({
+        code: `COMPANY_${user.company.status.toUpperCase()}`,
+        message: `This company is ${user.company.status}`
+      });
     }
 
     if (user.status !== 'active') {
