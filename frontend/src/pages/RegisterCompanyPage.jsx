@@ -49,6 +49,7 @@ const PlanCard = ({ plan, billingCycle, yearlyMonths, selected, onSelect }) => {
       type="button"
       onClick={onSelect}
       aria-pressed={selected}
+      aria-label={`${t(`plans.${plan.id}.name`)}, ${isTrial ? t("plans.free") : `${formatRupees(price)} ${billingCycle === "yearly" ? t("plans.perYear") : t("plans.perMonth")}`}`}
       className={`relative flex h-full flex-col rounded-3xl p-6 text-left transition ${
         selected
           ? "bg-white shadow-2xl shadow-leaf-600/20 ring-2 ring-leaf-500"
