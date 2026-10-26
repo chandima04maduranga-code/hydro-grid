@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, CircleCheck, LoaderCircle, Lock, Mail, Phone, User } from "lucide-react";
+import { ArrowLeft, CircleCheck, LoaderCircle, Lock, Mail, Phone, Send, User } from "lucide-react";
 import AuthShell from "../components/auth/AuthShell";
+import AuthCard from "../components/auth/AuthCard";
 import Alert from "../components/common/Alert";
 import FormField, { PasswordField } from "../components/common/FormField";
 import { useAuth } from "../context/AuthContext";
 import { getErrorCode } from "../api/axiosConfig";
 import { SUPPORTED_LANGUAGES } from "../i18n";
 import { validateRegistration } from "../utils/validation";
+import teaPhoto from "../assets/photos/haputale-tea-leaves.webp";
 
 const RegisterPage = () => {
   const { t, i18n } = useTranslation();
@@ -57,35 +59,32 @@ const RegisterPage = () => {
 
   if (registeredName) {
     return (
-      <AuthShell>
-        <div className="rounded-3xl border border-tea-100 bg-white p-8 text-center shadow-xl shadow-tea-900/5 sm:p-10">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-tea-50">
-            <CircleCheck className="h-8 w-8 text-tea-600" aria-hidden="true" />
+      <AuthShell photo={teaPhoto} photoCredit={t("credits.haputale")}>
+        <AuthCard>
+          <div className="text-center">
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-leaf-50">
+              <CircleCheck className="h-9 w-9 text-leaf-600" aria-hidden="true" />
+            </div>
+            <h2 className="text-2xl font-extrabold text-gray-900">{t("register.successTitle")}</h2>
+            <p className="mt-3 text-sm leading-relaxed text-gray-600">
+              {t("register.successText", { name: registeredName })}
+            </p>
+            <Link
+              to="/login"
+              className="mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-leaf-500 to-tea-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-leaf-500/30 hover:from-leaf-600 hover:to-tea-700"
+            >
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+              {t("register.backToLogin")}
+            </Link>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">{t("register.successTitle")}</h2>
-          <p className="mt-3 text-sm leading-relaxed text-gray-600">
-            {t("register.successText", { name: registeredName })}
-          </p>
-          <Link
-            to="/login"
-            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-tea-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-tea-800"
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            {t("register.backToLogin")}
-          </Link>
-        </div>
+        </AuthCard>
       </AuthShell>
     );
   }
 
   return (
-    <AuthShell>
-      <div className="rounded-3xl border border-tea-100 bg-white p-8 shadow-xl shadow-tea-900/5 sm:p-10">
-        <div className="mb-7">
-          <h2 className="text-2xl font-bold text-gray-900">{t("register.title")}</h2>
-          <p className="mt-1.5 text-sm text-gray-500">{t("register.subtitle")}</p>
-        </div>
-
+    <AuthShell photo={teaPhoto} photoCredit={t("credits.haputale")}>
+      <AuthCard title={t("register.title")} subtitle={t("register.subtitle")}>
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {errorCode && <Alert tone="error">{t(`errors.${errorCode}`, { defaultValue: t("errors.default") })}</Alert>}
 
@@ -154,8 +153,8 @@ const RegisterPage = () => {
                   lang={language}
                   className={`cursor-pointer rounded-xl border px-3 py-2.5 text-center text-sm font-medium transition ${
                     form.preferredLanguage === language
-                      ? "border-tea-600 bg-tea-50 text-tea-800"
-                      : "border-gray-200 text-gray-600 hover:border-tea-300"
+                      ? "border-leaf-500 bg-leaf-50 text-leaf-700"
+                      : "border-gray-200 bg-white/70 text-gray-600 hover:border-leaf-400"
                   }`}
                 >
                   <input
@@ -175,20 +174,22 @@ const RegisterPage = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-tea-700 px-4 py-3 font-semibold text-white transition hover:bg-tea-800 focus:outline-none focus:ring-4 focus:ring-tea-500/25 disabled:cursor-not-allowed disabled:opacity-70"
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-leaf-500 to-tea-600 px-4 py-3.5 text-base font-bold text-white shadow-lg shadow-leaf-500/30 transition hover:from-leaf-600 hover:to-tea-700 focus:outline-none focus:ring-4 focus:ring-leaf-500/30 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {submitting && <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />}
+            {submitting
+              ? <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" />
+              : <Send className="h-5 w-5" aria-hidden="true" />}
             {submitting ? t("register.submitting") : t("register.submit")}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-600">
           {t("register.haveAccount")}{" "}
-          <Link to="/login" className="font-semibold text-tea-700 hover:text-tea-800 hover:underline">
+          <Link to="/login" className="font-semibold text-leaf-700 hover:text-leaf-600 hover:underline">
             {t("register.login")}
           </Link>
         </p>
-      </div>
+      </AuthCard>
     </AuthShell>
   );
 };

@@ -19,6 +19,14 @@
   --color-tea-800: #1d412b;
   --color-tea-900: #163322;
 
+  /* Bright leaf greens for actions and highlights */
+  --color-leaf-50: #ecf8ee;
+  --color-leaf-100: #d3efd8;
+  --color-leaf-400: #4cbb5e;
+  --color-leaf-500: #2f9e44;
+  --color-leaf-600: #237a35;
+  --color-leaf-700: #1b602a;
+
   --color-gold-100: #f7ecd4;
   --color-gold-300: #e6c27a;
   --color-gold-400: #d9a441;
@@ -47,6 +55,14 @@
   :lang(si) body {
     line-height: 1.65;
   }
+}
+
+/* Frosted-glass surface for cards placed over photos */
+@utility glass {
+  background-color: rgb(255 255 255 / 0.78);
+  border: 1px solid rgb(255 255 255 / 0.7);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
 
 /* Geometric band inspired by Dumbara weaving, used as a decorative accent */

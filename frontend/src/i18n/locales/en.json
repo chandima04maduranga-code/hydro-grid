@@ -29,13 +29,22 @@
     "disabled": "Disabled"
   },
   "hero": {
-    "heading": "Smarter hydroponics for Sri Lankan growers",
+    "headingStart": "Smarter hydroponics for",
+    "headingHighlight": "Sri Lankan growers",
     "text": "Monitor nutrients, water and climate across your greenhouses — from the hill country to the dry zone.",
     "features": {
-      "monitoring": "Real-time sensor monitoring",
-      "climate": "Built for Sri Lanka's climate zones",
-      "language": "Available in English and Sinhala"
-    }
+      "monitoring": "Real-time monitoring",
+      "monitoringText": "Track moisture, temperature and nutrients",
+      "growth": "Healthy crop growth",
+      "growthText": "Optimise conditions for better yields",
+      "management": "Smart management",
+      "managementText": "Run every greenhouse from one place"
+    },
+    "quote": "Sustainable growth through smart technology"
+  },
+  "credits": {
+    "greenhouse": "Photo: Denis Sobnakov / Unsplash",
+    "haputale": "Photo: Lipton's Seat, Haputale · Yasasi Rajapakse / Unsplash"
   },
   "login": {
     "title": "Welcome back",
@@ -43,6 +52,7 @@
     "remember": "Keep me logged in",
     "submit": "Log in",
     "submitting": "Logging in…",
+    "or": "or",
     "noAccount": "New to Hydro_Grid?",
     "register": "Request access",
     "secureTitle": "Secure access",
