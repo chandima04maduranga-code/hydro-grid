@@ -8,7 +8,9 @@
     "password": "මුරපදය",
     "loading": "පූරණය වෙමින්…",
     "cancel": "අවලංගු කරන්න",
-    "back": "ආපසු"
+    "back": "ආපසු",
+    "showPassword": "මුරපදය පෙන්වන්න",
+    "hidePassword": "මුරපදය සඟවන්න"
   },
   "language": {
     "label": "භාෂාව",

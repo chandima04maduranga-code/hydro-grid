@@ -8,7 +8,9 @@
     "password": "Password",
     "loading": "Loading…",
     "cancel": "Cancel",
-    "back": "Back"
+    "back": "Back",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "language": {
     "label": "Language",
