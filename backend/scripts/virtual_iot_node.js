@@ -1,40 +1,108 @@
+// Virtual IoT nodes for development and demos.
+// Simulates a hydroponic greenhouse on Sri Lanka time: daily temperature,
+// humidity, light and CO2 cycles, slow drifts in reservoir level, pH, EC and
+// grow-bag moisture, and occasional air-pump failures, so the dashboard's
+// advice can be seen in action.
+//
+// Usage: npm run simulate -- <companyId> [nodeCount] [intervalSeconds]
+//   or set SIM_COMPANY_ID, SIM_NODES, SIM_INTERVAL_SECONDS, SIM_SERVER_URL
 const axios = require("axios");
 
-// Usage: npm run simulate -- <companyId> [hardwareId] [location]
-// or set SIM_COMPANY_ID / SIM_HARDWARE_ID / SIM_LOCATION
 const COMPANY_ID = process.argv[2] || process.env.SIM_COMPANY_ID;
-const HARDWARE_ID = process.argv[3] || process.env.SIM_HARDWARE_ID || "NODE_AGRI_01";
-const LOCATION = process.argv[4] || process.env.SIM_LOCATION || "Sector 4 - Alpha Field";
-const SERVER_URL = process.env.SIM_SERVER_URL || "http://localhost:5000/api/sensors/telemetry";
+const NODE_COUNT = Number(process.argv[3] || process.env.SIM_NODES || 2);
+const INTERVAL_SECONDS = Number(process.argv[4] || process.env.SIM_INTERVAL_SECONDS || 10);
+const SERVER_URL = process.env.SIM_SERVER_URL || "http://localhost:5000/api/telemetry";
 
 if (!COMPANY_ID) {
-  console.error("❌ Missing company id. Usage: npm run simulate -- <companyId> [hardwareId] [location]");
+  console.error("❌ Missing company id. Usage: npm run simulate -- <companyId> [nodeCount] [intervalSeconds]");
   process.exit(1);
 }
 
-// Function to generate and send realistic agricultural data
-const transmitTelemetry = async () => {
-  // Simulate Soil Moisture between 35.0% and 65.0%
-  const moistureValue = (Math.random() * (65 - 35) + 35).toFixed(1);
+const PUMP_FAILURE_CHANCE = 0.01; // per reading
+const PUMP_FAILURE_TICKS = 20;
 
+const noise = (spread) => (Math.random() - 0.5) * 2 * spread;
+const round = (value, decimals) => Number(value.toFixed(decimals));
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+// Hour of day in Sri Lanka as a fraction, e.g. 13.5 = 1:30 PM
+const colomboHour = () => {
+  const [hour, minute] = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Colombo", hour: "numeric", minute: "numeric", hour12: false })
+    .format(new Date())
+    .split(":")
+    .map(Number);
+  return hour + minute / 60;
+};
+
+// 0 at 6 AM and 6 PM, 1 at noon; nights cool down less than days warm up
+const dayCurve = (hour) => {
+  const curve = Math.sin(((hour - 6) / 12) * Math.PI);
+  return curve > 0 ? curve : curve * 0.4;
+};
+
+const createNode = (index) => ({
+  nodeId: `NODE_AGRI_${String(index + 1).padStart(2, "0")}`,
+  location: `Greenhouse bay ${index + 1}`,
+  waterLevel: 70 + Math.random() * 25,
+  ph: 5.8 + Math.random() * 0.4,
+  ec: 1.1 + Math.random() * 0.4,
+  substrateMoisture: 55 + Math.random() * 10,
+  pumpFailureTicks: 0
+});
+
+// Advances one node by one reading and returns the values to send
+const step = (node) => {
+  const hour = colomboHour();
+  const day = dayCurve(hour);
+  const daylight = Math.max(0, day);
+
+  // Drifts the farmer has to act on (sped up so demos show advice within
+  // minutes); the simulator "fixes" them itself at the extremes
+  node.waterLevel -= 0.25 + Math.random() * 0.15;
+  if (node.waterLevel < 12) node.waterLevel = 92; // reservoir topped up
+  node.ph += 0.004 + noise(0.003);
+  if (node.ph > 7.3) node.ph = 5.8; // pH down dosed
+  node.ec -= 0.002 + noise(0.002);
+  if (node.ec < 0.6) node.ec = 1.4; // nutrients added
+  node.substrateMoisture -= 0.15 + daylight * 0.2;
+  if (node.substrateMoisture < 32) node.substrateMoisture = 68; // irrigation cycle
+
+  if (node.pumpFailureTicks > 0) node.pumpFailureTicks -= 1;
+  else if (Math.random() < PUMP_FAILURE_CHANCE) node.pumpFailureTicks = PUMP_FAILURE_TICKS;
+
+  const airTemp = 22 + day * 7 + noise(0.6);
+  const waterTemp = 20.5 + day * 4 + noise(0.3);
+  const oxygen = node.pumpFailureTicks > 0 ? 3.2 + noise(0.4) : 8.6 - (waterTemp - 18) * 0.18 + noise(0.2);
+
+  return {
+    waterTemp: round(waterTemp, 1),
+    ph: round(node.ph, 2),
+    ec: round(node.ec, 2),
+    dissolvedOxygen: round(oxygen, 1),
+    waterLevel: round(node.waterLevel, 0),
+    airTemp: round(airTemp, 1),
+    humidity: round(clamp(76 - day * 20 + noise(2), 30, 98), 0),
+    light: round(daylight * (620 + noise(120)), 0),
+    co2: round(day > 0 ? 450 + noise(40) : 720 + noise(60), 0),
+    substrateMoisture: round(node.substrateMoisture, 0)
+  };
+};
+
+const nodes = Array.from({ length: NODE_COUNT }, (_, index) => createNode(index));
+
+const transmit = async (node) => {
+  const readings = step(node);
   try {
-    await axios.post(SERVER_URL, {
-      companyId: COMPANY_ID,
-      hardwareId: HARDWARE_ID,
-      type: "Soil Moisture",
-      value: moistureValue,
-      unit: "%",
-      location: LOCATION
-    });
-
-    console.log(`[IoT Node ${HARDWARE_ID}] Successfully transmitted: ${moistureValue}% moisture`);
+    await axios.post(SERVER_URL, { companyId: COMPANY_ID, nodeId: node.nodeId, location: node.location, readings });
+    const pump = node.pumpFailureTicks > 0 ? " ⚠ air pump failure" : "";
+    console.log(`[${node.nodeId}] pH ${readings.ph} · EC ${readings.ec} · water ${readings.waterLevel}% · DO ${readings.dissolvedOxygen} mg/L · air ${readings.airTemp}°C${pump}`);
   } catch (error) {
     const reason = error.response?.data?.message || "Is the backend server running?";
-    console.error(`[IoT Node ${HARDWARE_ID}] Transmission failed. ${reason}`);
+    console.error(`[${node.nodeId}] Transmission failed. ${reason}`);
   }
 };
 
-console.log(`[IoT Node ${HARDWARE_ID}] Virtual hardware initialized for company ${COMPANY_ID}. Booting telemetry stream...`);
-
-// Execute the transmission every 5 seconds (5000 milliseconds)
-setInterval(transmitTelemetry, 5000);
+console.log(`Starting ${NODE_COUNT} virtual node(s) for company ${COMPANY_ID}, every ${INTERVAL_SECONDS}s → ${SERVER_URL}`);
+const tick = () => Promise.all(nodes.map(transmit));
+tick();
+setInterval(tick, INTERVAL_SECONDS * 1000);
