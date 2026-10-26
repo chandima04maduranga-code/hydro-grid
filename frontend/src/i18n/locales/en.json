@@ -1,0 +1,147 @@
+{
+  "app": {
+    "name": "Hydro_Grid",
+    "tagline": "Smart Hydroponic Management"
+  },
+  "common": {
+    "email": "Email",
+    "password": "Password",
+    "loading": "Loading…",
+    "cancel": "Cancel",
+    "back": "Back"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "si": "සිංහල"
+  },
+  "roles": {
+    "admin": "Admin",
+    "farm_manager": "Farm Manager",
+    "field_officer": "Field Officer"
+  },
+  "statuses": {
+    "pending": "Pending",
+    "active": "Active",
+    "rejected": "Rejected",
+    "disabled": "Disabled"
+  },
+  "hero": {
+    "heading": "Smarter hydroponics for Sri Lankan growers",
+    "text": "Monitor nutrients, water and climate across your greenhouses — from the hill country to the dry zone.",
+    "features": {
+      "monitoring": "Real-time sensor monitoring",
+      "climate": "Built for Sri Lanka's climate zones",
+      "language": "Available in English and Sinhala"
+    }
+  },
+  "login": {
+    "title": "Welcome back",
+    "subtitle": "Log in to your Hydro_Grid control panel",
+    "remember": "Keep me logged in",
+    "submit": "Log in",
+    "submitting": "Logging in…",
+    "noAccount": "New to Hydro_Grid?",
+    "register": "Request access",
+    "secureTitle": "Secure access",
+    "secureText": "Every account is approved by your farm administrator."
+  },
+  "register": {
+    "title": "Request access",
+    "subtitle": "Create your account. An administrator will approve it and assign your role.",
+    "name": "Full name",
+    "phone": "Mobile number",
+    "phoneHint": "Optional · e.g. 07X XXX XXXX",
+    "confirm": "Confirm password",
+    "passwordHint": "At least 8 characters, with letters and numbers",
+    "preferredLanguage": "Preferred language",
+    "submit": "Submit request",
+    "submitting": "Submitting…",
+    "haveAccount": "Already have an account?",
+    "login": "Log in",
+    "successTitle": "Request submitted",
+    "successText": "Thank you, {{name}}. An administrator will review your account. You can log in once it is approved.",
+    "backToLogin": "Back to log in"
+  },
+  "errors": {
+    "INVALID_CREDENTIALS": "Incorrect email or password.",
+    "ACCOUNT_PENDING": "Your account is waiting for administrator approval.",
+    "ACCOUNT_REJECTED": "Your account request was not approved. Please contact your administrator.",
+    "ACCOUNT_DISABLED": "Your account has been disabled. Please contact your administrator.",
+    "EMAIL_TAKEN": "An account with this email already exists.",
+    "VALIDATION_ERROR": "Please correct the highlighted fields.",
+    "SERVER_ERROR": "Something went wrong. Please try again.",
+    "NETWORK": "Cannot reach the server. Please check your connection.",
+    "SESSION_EXPIRED": "Your session has expired. Please log in again.",
+    "FORBIDDEN": "You do not have permission for this action.",
+    "CANNOT_CHANGE_SELF": "You cannot change your own role or status.",
+    "NOT_PENDING": "This account has already been reviewed.",
+    "USER_NOT_FOUND": "User not found.",
+    "INVALID_ROLE": "Choose a valid role.",
+    "default": "Something went wrong. Please try again."
+  },
+  "fields": {
+    "REQUIRED": "This field is required",
+    "INVALID_EMAIL": "Enter a valid email address",
+    "INVALID_PHONE": "Enter a Sri Lankan mobile number (07X XXX XXXX)",
+    "WEAK_PASSWORD": "Use at least 8 characters, with letters and numbers",
+    "MISMATCH": "Passwords do not match"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "logout": "Log out",
+    "slTime": "Sri Lanka time"
+  },
+  "users": {
+    "title": "User management",
+    "subtitle": "Approve access requests and manage staff roles.",
+    "tabs": {
+      "pending": "Pending requests",
+      "all": "All users"
+    },
+    "emptyPending": "No pending requests. New sign-ups will appear here.",
+    "emptyAll": "No users found.",
+    "columns": {
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "lastLogin": "Last login",
+      "registered": "Requested",
+      "language": "Language",
+      "actions": "Actions"
+    },
+    "approveAs": "Approve as",
+    "approve": "Approve",
+    "reject": "Reject",
+    "disable": "Disable",
+    "enable": "Enable",
+    "you": "You",
+    "never": "Never",
+    "confirmReject": "Reject {{name}}'s request?",
+    "confirmDisable": "Disable {{name}}? They will be logged out immediately.",
+    "approved": "{{name}} approved as {{role}}",
+    "rejected": "{{name}}'s request was rejected",
+    "updated": "{{name}} updated"
+  },
+  "dashboard": {
+    "greeting": "Ayubowan, {{name}}",
+    "subtitle": "Monitor • Manage • Grow smarter",
+    "crops": "Active crop systems",
+    "systemsCount": "{{count}} systems",
+    "noPlants": "No crop systems registered yet.",
+    "telemetry": "Live telemetry",
+    "nodesCount": "{{count}} nodes",
+    "noTelemetry": "No telemetry received yet.",
+    "location": "Location",
+    "cropType": "Crop type",
+    "systemId": "System ID",
+    "growthStage": "Growth stage",
+    "updated": "Updated {{time}}"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "text": "The page you are looking for does not exist.",
+    "home": "Go to dashboard"
+  }
+}

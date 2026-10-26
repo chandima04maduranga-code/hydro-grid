@@ -1,9 +1,58 @@
 @import "tailwindcss";
 
-/* Hydro_Grid brand palette (used as e.g. text-hydroGreen, bg-hydroLightCyan) */
+/*
+ * Hydro_Grid design tokens
+ * Palette inspired by Sri Lankan hill-country tea estates:
+ * tea greens, Ceylon-tea gold, red-earth clay and warm cream.
+ */
 @theme {
+  --font-sans: "Inter Variable", "Noto Sans Sinhala Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-tea-50: #f1f7f2;
+  --color-tea-100: #dcebdf;
+  --color-tea-200: #b9d7c0;
+  --color-tea-300: #8dbd99;
+  --color-tea-400: #5f9d6f;
+  --color-tea-500: #3e7f52;
+  --color-tea-600: #2d6640;
+  --color-tea-700: #245135;
+  --color-tea-800: #1d412b;
+  --color-tea-900: #163322;
+
+  --color-gold-100: #f7ecd4;
+  --color-gold-300: #e6c27a;
+  --color-gold-400: #d9a441;
+  --color-gold-500: #c58b2a;
+  --color-gold-600: #a06d1f;
+
+  --color-clay-50: #fbefe9;
+  --color-clay-500: #b5532f;
+  --color-clay-600: #93421f;
+
+  --color-cream: #faf6ec;
+
+  /* Legacy brand colours still used by the dashboard */
   --color-hydroGreen: #1b5e20;
   --color-hydroLightGreen: #e8f5e9;
   --color-hydroCyan: #00838f;
   --color-hydroLightCyan: #e0f7fa;
+}
+
+@layer base {
+  body {
+    @apply bg-cream text-gray-900 antialiased;
+  }
+
+  /* Sinhala script needs a little more line height to stay readable */
+  :lang(si) body {
+    line-height: 1.65;
+  }
+}
+
+/* Geometric band inspired by Dumbara weaving, used as a decorative accent */
+@utility dumbara-band {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 24 8'%3E%3Cpath d='M0 4 L6 0 L12 4 L6 8 Z' fill='%23c58b2a'/%3E%3Cpath d='M12 4 L18 0 L24 4 L18 8 Z' fill='%232d6640'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 24px 8px;
+  height: 8px;
 }
