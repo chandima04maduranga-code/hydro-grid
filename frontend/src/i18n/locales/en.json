@@ -352,7 +352,11 @@
     "saved": "Node settings saved",
     "noNodes": "No sensor nodes are reporting yet.",
     "noNodesHint": "Connect a node, or start the virtual node for this company:",
-    "problemsOnNode": "Problems on this node"
+    "problemsOnNode": "Problems on this node",
+    "last7Days": "Last 7 days",
+    "notFound": "Sensor node not found.",
+    "targetBand": "Target band",
+    "noAccess": "Only admins and farm managers can change node settings."
   },
   "advice": {
     "waterTemp.high": {
