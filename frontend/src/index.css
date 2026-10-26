@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+/* Hydro_Grid brand palette (used as e.g. text-hydroGreen, bg-hydroLightCyan) */
+@theme {
+  --color-hydroGreen: #1b5e20;
+  --color-hydroLightGreen: #e8f5e9;
+  --color-hydroCyan: #00838f;
+  --color-hydroLightCyan: #e0f7fa;
+}
