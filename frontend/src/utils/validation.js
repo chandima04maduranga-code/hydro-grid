@@ -11,8 +11,9 @@ export const isStrongPassword = (value) =>
   value.length >= 8 && /[A-Za-z]/.test(value) && /\d/.test(value);
 
 // Returns { field: errorCode } for the registration form
-export const validateRegistration = ({ name, email, phone, password, confirm }) => {
+export const validateRegistration = ({ companyId, name, email, phone, password, confirm }) => {
   const errors = {};
+  if (!companyId) errors.companyId = "REQUIRED_COMPANY";
   if (!name.trim()) errors.name = "REQUIRED";
   if (!isValidEmail(email)) errors.email = "INVALID_EMAIL";
   if (phone.trim() && !isValidLkMobile(phone)) errors.phone = "INVALID_PHONE";

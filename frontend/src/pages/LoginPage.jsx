@@ -1,23 +1,30 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import { LoaderCircle, Lock, LogIn, Mail, ShieldCheck, UserPlus } from "lucide-react";
+import { Building2, LoaderCircle, Lock, LogIn, Mail, ShieldCheck, UserPlus } from "lucide-react";
 import AuthShell from "../components/auth/AuthShell";
 import AuthCard from "../components/auth/AuthCard";
 import Alert from "../components/common/Alert";
 import FormField, { PasswordField } from "../components/common/FormField";
+import SelectField from "../components/common/SelectField";
 import { useAuth } from "../context/AuthContext";
 import { getErrorCode } from "../api/axiosConfig";
+import { readLastCompany, saveLastCompany, useCompanies } from "../hooks/useCompanies";
 import greenhousePhoto from "../assets/photos/greenhouse-strawberries.webp";
 
-const WARNING_CODES = ["ACCOUNT_PENDING", "SESSION_EXPIRED"];
+const WARNING_CODES = ["ACCOUNT_PENDING", "SESSION_EXPIRED", "COMPANY_PENDING"];
+
+// Must match PLATFORM_LOGIN in backend/routes/auth.js
+const PLATFORM_LOGIN = "platform";
 
 const LoginPage = () => {
   const { t } = useTranslation();
   const { login, sessionExpired } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { companies } = useCompanies();
 
+  const [companyId, setCompanyId] = useState(readLastCompany);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
@@ -27,10 +34,16 @@ const LoginPage = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setErrorCode("");
+    if (!companyId) {
+      setErrorCode("COMPANY_NOT_FOUND");
+      return;
+    }
     setSubmitting(true);
     try {
-      await login(email, password, remember);
-      navigate(location.state?.from?.pathname || "/dashboard", { replace: true });
+      const user = await login(companyId, email, password, remember);
+      saveLastCompany(companyId);
+      const home = user.role === "platform_admin" ? "/platform/companies" : "/dashboard";
+      navigate(location.state?.from?.pathname || home, { replace: true });
     } catch (error) {
       setErrorCode(getErrorCode(error));
       setSubmitting(false);
@@ -47,6 +60,22 @@ const LoginPage = () => {
             </Alert>
           )}
 
+          <SelectField
+            id="company"
+            label={t("login.company")}
+            icon={Building2}
+            value={companyId}
+            onChange={(event) => setCompanyId(event.target.value)}
+            required
+          >
+            <option value="" disabled>{t("login.chooseCompany")}</option>
+            {companies.map((company) => (
+              <option key={company._id} value={company._id}>
+                {company.name} · {t(`districts.${company.district}`)}
+              </option>
+            ))}
+            <option value={PLATFORM_LOGIN}>{t("login.platformOption")}</option>
+          </SelectField>
           <FormField
             id="email"
             type="email"
@@ -103,6 +132,13 @@ const LoginPage = () => {
         >
           <UserPlus className="h-4 w-4" aria-hidden="true" />
           {t("login.noAccount")} {t("login.register")}
+        </Link>
+        <Link
+          to="/register-company"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-gold-400/50 bg-gold-100/60 px-4 py-3 text-sm font-semibold text-gold-600 transition hover:bg-gold-100"
+        >
+          <Building2 className="h-4 w-4" aria-hidden="true" />
+          {t("login.newCompany")} {t("login.registerCompany")}
         </Link>
 
         <div className="mt-6 flex items-start gap-3 rounded-2xl bg-leaf-50/80 p-4">

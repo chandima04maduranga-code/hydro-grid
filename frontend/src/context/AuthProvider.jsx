@@ -43,8 +43,8 @@ const AuthProvider = ({ children }) => {
       .catch(() => endSession());
   }, [startSession, endSession]);
 
-  const login = useCallback(async (email, password, remember) => {
-    const { data } = await apiClient.post("/auth/login", { email, password });
+  const login = useCallback(async (companyId, email, password, remember) => {
+    const { data } = await apiClient.post("/auth/login", { companyId, email, password });
     saveToken(data.token, remember);
     startSession(data.user);
     return data.user;

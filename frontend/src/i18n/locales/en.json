@@ -18,6 +18,7 @@
     "si": "සිංහල"
   },
   "roles": {
+    "platform_admin": "Platform Admin",
     "admin": "Admin",
     "farm_manager": "Farm Manager",
     "field_officer": "Field Officer"
@@ -56,7 +57,12 @@
     "noAccount": "New to Hydro_Grid?",
     "register": "Request access",
     "secureTitle": "Secure access",
-    "secureText": "Every account is approved by your farm administrator."
+    "secureText": "Every account is approved by your farm administrator.",
+    "company": "Company",
+    "chooseCompany": "Choose your company",
+    "platformOption": "Hydro_Grid platform (administrators)",
+    "registerCompany": "Register your company",
+    "newCompany": "Running a farming company?"
   },
   "register": {
     "title": "Request access",
@@ -73,10 +79,12 @@
     "login": "Log in",
     "successTitle": "Request submitted",
     "successText": "Thank you, {{name}}. An administrator will review your account. You can log in once it is approved.",
-    "backToLogin": "Back to log in"
+    "backToLogin": "Back to log in",
+    "company": "Company",
+    "chooseCompany": "Choose your company"
   },
   "errors": {
-    "INVALID_CREDENTIALS": "Incorrect email or password.",
+    "INVALID_CREDENTIALS": "Incorrect company, email or password.",
     "ACCOUNT_PENDING": "Your account is waiting for administrator approval.",
     "ACCOUNT_REJECTED": "Your account request was not approved. Please contact your administrator.",
     "ACCOUNT_DISABLED": "Your account has been disabled. Please contact your administrator.",
@@ -90,14 +98,22 @@
     "NOT_PENDING": "This account has already been reviewed.",
     "USER_NOT_FOUND": "User not found.",
     "INVALID_ROLE": "Choose a valid role.",
-    "default": "Something went wrong. Please try again."
+    "default": "Something went wrong. Please try again.",
+    "COMPANY_PENDING": "This company is waiting for approval by Hydro_Grid.",
+    "COMPANY_REJECTED": "This company registration was not approved.",
+    "COMPANY_SUSPENDED": "This company is suspended. Please contact Hydro_Grid support.",
+    "COMPANY_INACTIVE": "Your company is no longer active.",
+    "COMPANY_NOT_FOUND": "Choose an active company.",
+    "COMPANY_NAME_TAKEN": "A company with this name is already registered.",
+    "INVALID_COMPANY_STATUS": "This action is not possible for the company right now."
   },
   "fields": {
     "REQUIRED": "This field is required",
     "INVALID_EMAIL": "Enter a valid email address",
     "INVALID_PHONE": "Enter a Sri Lankan mobile number (07X XXX XXXX)",
     "WEAK_PASSWORD": "Use at least 8 characters, with letters and numbers",
-    "MISMATCH": "Passwords do not match"
+    "MISMATCH": "Passwords do not match",
+    "REQUIRED_COMPANY": "Choose your company"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -105,7 +121,9 @@
     "logout": "Log out",
     "slTime": "Sri Lanka time",
     "controlPanel": "Control panel",
-    "pendingApprovals": "{{count}} pending approvals"
+    "pendingApprovals": "{{count}} pending approvals",
+    "companies": "Companies",
+    "platform": "Hydro_Grid platform"
   },
   "users": {
     "title": "User management",
@@ -160,5 +178,107 @@
     "title": "Page not found",
     "text": "The page you are looking for does not exist.",
     "home": "Go to dashboard"
+  },
+  "districts": {
+    "Nuwara Eliya": "Nuwara Eliya",
+    "Badulla": "Badulla",
+    "Kandy": "Kandy",
+    "Kurunegala": "Kurunegala"
+  },
+  "plans": {
+    "trial": {
+      "name": "Free trial",
+      "tagline": "Try Hydro_Grid for 14 days"
+    },
+    "starter": {
+      "name": "Starter",
+      "tagline": "For a single farm site"
+    },
+    "growth": {
+      "name": "Growth",
+      "tagline": "For growing multi-site operations"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "tagline": "For large agricultural companies"
+    },
+    "free": "Free",
+    "perMonth": "/ month",
+    "perYear": "/ year",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "yearlySaving": "2 months free",
+    "greenhouses": "{{count}} greenhouses",
+    "greenhouses_one": "{{count}} greenhouse",
+    "users": "{{count}} users",
+    "sensorNodes": "{{count}} sensor nodes",
+    "unlimitedGreenhouses": "Unlimited greenhouses",
+    "unlimitedUsers": "Unlimited users",
+    "unlimitedSensorNodes": "Unlimited sensor nodes",
+    "prioritySupport": "Priority support",
+    "trialDays": "{{count}} days free",
+    "popular": "Most popular"
+  },
+  "companySignup": {
+    "title": "Register your company",
+    "subtitle": "Get your own private Hydro_Grid workspace for your greenhouses and staff.",
+    "stepPlan": "Choose a plan",
+    "stepDetails": "Company details",
+    "stepAdmin": "Company administrator",
+    "companyName": "Company name",
+    "companyNamePlaceholder": "Registered company name",
+    "district": "Head office district",
+    "chooseDistrict": "Choose a district",
+    "companyPhone": "Company phone",
+    "adminHint": "This person manages the company workspace and approves staff.",
+    "selected": "Selected",
+    "choose": "Choose",
+    "continue": "Continue",
+    "back": "Back",
+    "submit": "Register company",
+    "submitting": "Registering…",
+    "paymentNote": "Paid plans are billed after approval through PayHere (sandbox / test mode).",
+    "successTitle": "Company registered",
+    "successText": "{{company}} has been registered on the {{plan}} plan. Hydro_Grid will review it shortly. After approval, {{name}} can log in by choosing the company on the login page.",
+    "haveAccount": "Already registered?"
+  },
+  "platform": {
+    "title": "Companies",
+    "subtitle": "Review new company registrations and manage subscriptions.",
+    "summary": {
+      "pending": "Waiting for approval",
+      "active": "Active companies",
+      "suspended": "Suspended",
+      "users": "Company users"
+    },
+    "tabs": {
+      "pending": "Pending",
+      "active": "Active",
+      "suspended": "Suspended",
+      "rejected": "Rejected",
+      "all": "All"
+    },
+    "empty": "No companies here.",
+    "admin": "Administrator",
+    "users": "{{count}} users",
+    "registered": "Registered {{date}}",
+    "trialEnds": "Trial ends {{date}}",
+    "billing": "Billing",
+    "approve": "Approve",
+    "reject": "Reject",
+    "suspend": "Suspend",
+    "reactivate": "Reactivate",
+    "confirmReject": "Reject the registration of {{name}}?",
+    "confirmSuspend": "Suspend {{name}}? All of its users will be logged out immediately.",
+    "approved": "{{name}} approved",
+    "rejected": "{{name}} rejected",
+    "suspended": "{{name}} suspended",
+    "reactivated": "{{name}} reactivated"
+  },
+  "companyStatuses": {
+    "pending": "Pending",
+    "active": "Active",
+    "rejected": "Rejected",
+    "suspended": "Suspended"
   }
 }
