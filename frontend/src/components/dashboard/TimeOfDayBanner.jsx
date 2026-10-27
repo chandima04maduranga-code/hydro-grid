@@ -14,13 +14,13 @@ const CHECK_MS = 60000;
 // Sri Lankan crop scenes through the day, picked by the hour in Colombo.
 // `from` is the starting hour; each scene runs until the next one starts.
 const SCENES = [
-  { id: "kandyDusk", from: 0, photo: kandyDusk, position: "center 75%", credit: "Rowan Heuvel" },
-  { id: "mistyTea", from: 5, photo: mistyTea, position: "center 45%", credit: "Erik Esly" },
-  { id: "hillFarm", from: 9, photo: hillFarm, position: "center 50%", credit: "Egle Sidaraviciute" },
-  { id: "paddy", from: 12, photo: paddy, position: "center 40%", credit: "Thuva Shan" },
-  { id: "coconutPalms", from: 15, photo: coconutPalms, position: "center 50%", credit: "Dilani Wickramanayake" },
-  { id: "teaSunlight", from: 17, photo: teaSunlight, position: "center 40%", credit: "Thushal Madhushankha" },
-  { id: "kandyDusk", from: 19, photo: kandyDusk, position: "center 75%", credit: "Rowan Heuvel" }
+  { id: "kandyDusk", from: 0, photo: kandyDusk, position: "center 75%" },
+  { id: "mistyTea", from: 5, photo: mistyTea, position: "center 45%" },
+  { id: "hillFarm", from: 9, photo: hillFarm, position: "center 50%" },
+  { id: "paddy", from: 12, photo: paddy, position: "center 40%" },
+  { id: "coconutPalms", from: 15, photo: coconutPalms, position: "center 50%" },
+  { id: "teaSunlight", from: 17, photo: teaSunlight, position: "center 40%" },
+  { id: "kandyDusk", from: 19, photo: kandyDusk, position: "center 75%" }
 ];
 
 const colomboHour = (date) =>
@@ -80,21 +80,15 @@ const TimeOfDayBanner = ({ name, company, lastUpdated }) => {
           )}
         </div>
 
-        <div className="flex flex-wrap items-end justify-between gap-3 text-xs text-white/80">
-          {lastUpdated ? (
-            <p className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-              </span>
-              {t("dashboard.live")} · {formatClock(lastUpdated, i18n.language)}
-            </p>
-          ) : <span />}
-          <p className="text-right">
-            <span className="font-medium text-white">{t(`dashboard.scenes.${scene.id}`)}</span>
-            <span className="text-white/60"> · {t("dashboard.photoBy", { name: scene.credit })}</span>
+        {lastUpdated && (
+          <p className="flex items-center gap-2 text-xs text-white/80">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            {t("dashboard.live")} · {formatClock(lastUpdated, i18n.language)}
           </p>
-        </div>
+        )}
       </div>
     </section>
   );
