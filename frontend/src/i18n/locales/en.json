@@ -301,6 +301,7 @@
     "ec": "Nutrients (EC)",
     "dissolvedOxygen": "Dissolved oxygen",
     "waterLevel": "Reservoir level",
+    "flowRate": "Water flow",
     "airTemp": "Air temperature",
     "humidity": "Humidity",
     "light": "Light",
@@ -370,7 +371,16 @@
     "last7Days": "Last 7 days",
     "notFound": "Sensor node not found.",
     "targetBand": "Target band",
-    "noAccess": "Only admins and farm managers can change node settings."
+    "noAccess": "Only admins and farm managers can change node settings.",
+    "urgency": {
+      "critical": "Act within 1 hour",
+      "warning": "Fix today"
+    },
+    "problemsAndFixes": "Problems and how to fix them",
+    "showAll": "Show all ({{count}})",
+    "showLess": "Show less",
+    "allGoodTitle": "Everything looks good",
+    "reservoir": "Reservoir"
   },
   "advice": {
     "waterTemp.high": {
@@ -518,6 +528,7 @@
       "title": "Grow bags are drying out",
       "why": "Dry roots stop taking up water and nutrients, and plants wilt.",
       "steps": [
+        "Look at the water flow reading. A stopped pump is the most common cause.",
         "Run an irrigation cycle now.",
         "Check drippers for blockages.",
         "Water more often in hot weather."
@@ -530,6 +541,35 @@
         "Pause irrigation until the medium dries a little.",
         "Check that drainage holes are not blocked.",
         "Shorten the irrigation time."
+      ]
+    },
+    "flowRate.low": {
+      "title": "Water flow has stopped or is weak",
+      "why": "In NFT channels and drip lines, roots dry out within an hour when the water stops flowing.",
+      "steps": [
+        "Check that the circulation pump has power (plug, switch and fuse).",
+        "Clean the pump filter and inlet. Algae and roots often block it.",
+        "Flush blocked channels and drippers, and straighten kinked pipes.",
+        "If the pump is broken, water the grow bags by hand until it is replaced."
+      ]
+    },
+    "flowRate.high": {
+      "title": "Water flow is too strong",
+      "why": "Fast flow floods the channels, washes roots loose and can overflow the reservoir.",
+      "steps": [
+        "Partly close the valve after the pump.",
+        "Check that the return pipe to the reservoir is not blocked.",
+        "Aim for 1.5 to 4 litres per minute per channel."
+      ]
+    },
+    "node.offline": {
+      "title": "Sensor node is not sending data",
+      "why": "Without readings you cannot see problems such as an empty reservoir or a stopped pump.",
+      "steps": [
+        "Check the node's power adapter or battery.",
+        "Check that the Wi-Fi router is on and close enough to the node.",
+        "Restart the node: unplug it for 10 seconds, then plug it back in.",
+        "Until it is back, check pH, EC and the water level by hand."
       ]
     }
   },

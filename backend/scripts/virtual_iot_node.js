@@ -1,7 +1,8 @@
 // Virtual IoT nodes for development and demos.
 // Simulates a hydroponic greenhouse on Sri Lanka time: daily temperature,
 // humidity, light and CO2 cycles, slow drifts in reservoir level, pH, EC and
-// grow-bag moisture, and occasional air-pump failures, so the dashboard's
+// grow-bag moisture, and occasional air-pump failures and blocked circulation
+// pumps (no flow, so the grow bags dry out), so the dashboard's
 // advice can be seen in action.
 //
 // Usage: npm run simulate -- <companyId> [nodes] [intervalSeconds]
@@ -24,6 +25,8 @@ if (!COMPANY_ID) {
 
 const PUMP_FAILURE_CHANCE = 0.01; // per reading
 const PUMP_FAILURE_TICKS = 20;
+const CLOG_CHANCE = 0.01; // per reading
+const CLOG_TICKS = 15;
 
 const noise = (spread) => (Math.random() - 0.5) * 2 * spread;
 const round = (value, decimals) => Number(value.toFixed(decimals));
@@ -57,7 +60,8 @@ const createNode = (index, nodeId, crop = DEFAULT_CROP) => {
     ph: 5.8 + Math.random() * 0.4,
     ec: low + (high - low) * (0.5 + Math.random() * 0.4),
     substrateMoisture: 55 + Math.random() * 10,
-    pumpFailureTicks: 0
+    pumpFailureTicks: 0,
+    clogTicks: 0
   };
 };
 
@@ -91,8 +95,14 @@ const step = (node) => {
   const [ecLow, ecHigh] = ecBandFor(node.crop);
   node.ec -= (ecHigh - ecLow) * (0.005 + noise(0.004));
   if (node.ec < ecLow * 0.75) node.ec = ecHigh * 0.95; // nutrients added
-  node.substrateMoisture -= 0.15 + daylight * 0.2;
-  if (node.substrateMoisture < 32) node.substrateMoisture = 68; // irrigation cycle
+  if (node.clogTicks > 0) node.clogTicks -= 1;
+  else if (Math.random() < CLOG_CHANCE) node.clogTicks = CLOG_TICKS;
+  const clogged = node.clogTicks > 0;
+
+  // With no flow the grow bags dry out much faster
+  node.substrateMoisture -= (0.15 + daylight * 0.2) * (clogged ? 4 : 1);
+  if (!clogged && node.substrateMoisture < 32) node.substrateMoisture = 68; // irrigation cycle
+  node.substrateMoisture = Math.max(8, node.substrateMoisture);
 
   if (node.pumpFailureTicks > 0) node.pumpFailureTicks -= 1;
   else if (Math.random() < PUMP_FAILURE_CHANCE) node.pumpFailureTicks = PUMP_FAILURE_TICKS;
@@ -107,6 +117,7 @@ const step = (node) => {
     ec: round(node.ec, 2),
     dissolvedOxygen: round(oxygen, 1),
     waterLevel: round(node.waterLevel, 0),
+    flowRate: round(clogged ? 0.2 + Math.random() * 0.3 : 2.4 + noise(0.3), 1),
     airTemp: round(airTemp, 1),
     humidity: round(clamp(76 - day * 20 + noise(2), 30, 98), 0),
     light: round(daylight * (620 + noise(120)), 0),
@@ -121,8 +132,8 @@ const transmit = async (node) => {
   const readings = step(node);
   try {
     await axios.post(SERVER_URL, { companyId: COMPANY_ID, nodeId: node.nodeId, location: node.location, readings });
-    const pump = node.pumpFailureTicks > 0 ? " ⚠ air pump failure" : "";
-    console.log(`[${node.nodeId}] pH ${readings.ph} · EC ${readings.ec} · water ${readings.waterLevel}% · DO ${readings.dissolvedOxygen} mg/L · air ${readings.airTemp}°C${pump}`);
+    const pump = (node.pumpFailureTicks > 0 ? " ⚠ air pump failure" : "") + (node.clogTicks > 0 ? " ⚠ circulation pump blocked" : "");
+    console.log(`[${node.nodeId}] pH ${readings.ph} · EC ${readings.ec} · water ${readings.waterLevel}% · flow ${readings.flowRate} L/min · DO ${readings.dissolvedOxygen} mg/L · air ${readings.airTemp}°C${pump}`);
   } catch (error) {
     const reason = error.response?.data?.message || "Is the backend server running?";
     console.error(`[${node.nodeId}] Transmission failed. ${reason}`);

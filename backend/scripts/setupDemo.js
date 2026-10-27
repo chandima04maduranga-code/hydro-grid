@@ -82,6 +82,7 @@ const buildHistory = (companyId, nodeId, crop, now) => {
       waterTemp, ph, ec,
       dissolvedOxygen: 8.6 - (waterTemp - 18) * 0.18,
       waterLevel: level,
+      flowRate: 2.4 + Math.sin(step) * 0.2,
       airTemp: 22 + day * 7,
       humidity: 76 - day * 20,
       light: Math.max(0, day) * 620,
