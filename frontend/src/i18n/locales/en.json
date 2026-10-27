@@ -105,7 +105,14 @@
     "COMPANY_INACTIVE": "Your company is no longer active.",
     "COMPANY_NOT_FOUND": "Choose an active company.",
     "COMPANY_NAME_TAKEN": "A company with this name is already registered.",
-    "INVALID_COMPANY_STATUS": "This action is not possible for the company right now."
+    "INVALID_COMPANY_STATUS": "This action is not possible for the company right now.",
+    "PLAN_LIMIT_GREENHOUSES": "Your plan's greenhouse limit is reached. Upgrade the plan to add more.",
+    "PLAN_LIMIT_NODES": "Your plan's sensor node limit is reached.",
+    "GREENHOUSE_NOT_FOUND": "Greenhouse not found.",
+    "GREENHOUSE_HAS_NODES": "Move or remove this greenhouse's sensor nodes first.",
+    "INVALID_STAFF": "Only active farm managers and field officers of your company can be assigned.",
+    "NODE_NOT_FOUND": "Sensor node not found.",
+    "TRY_AGAIN": "Please try again."
   },
   "fields": {
     "REQUIRED": "This field is required",
@@ -113,7 +120,9 @@
     "INVALID_PHONE": "Enter a Sri Lankan mobile number (07X XXX XXXX)",
     "WEAK_PASSWORD": "Use at least 8 characters, with letters and numbers",
     "MISMATCH": "Passwords do not match",
-    "REQUIRED_COMPANY": "Choose your company"
+    "REQUIRED_COMPANY": "Choose your company",
+    "INVALID_AREA": "Enter an area between 1 and 1,000,000 m²",
+    "TOO_LONG": "This is too long"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -123,7 +132,8 @@
     "controlPanel": "Control panel",
     "pendingApprovals": "{{count}} pending approvals",
     "companies": "Companies",
-    "platform": "Hydro_Grid platform"
+    "platform": "Hydro_Grid platform",
+    "greenhouses": "Greenhouses"
   },
   "users": {
     "title": "User management",
@@ -518,5 +528,73 @@
         "Shorten the irrigation time."
       ]
     }
+  },
+  "systemTypes": {
+    "nft": "NFT channels",
+    "dwc": "Deep water culture",
+    "growBag": "Grow bags / drip",
+    "ebbFlow": "Ebb and flow",
+    "vertical": "Vertical towers"
+  },
+  "greenhouseStatuses": {
+    "active": "Active",
+    "maintenance": "Under maintenance",
+    "inactive": "Inactive"
+  },
+  "greenhouses": {
+    "title": "Greenhouses",
+    "subtitle": "Your greenhouses by district, with their sensors and staff.",
+    "add": "Add greenhouse",
+    "addTitle": "Add a greenhouse",
+    "nextCode": "It will be registered as {{code}}",
+    "district": "District",
+    "chooseDistrict": "Choose a district",
+    "name": "Greenhouse name",
+    "namePlaceholder": "e.g. Leafy Greens House",
+    "system": "Growing system",
+    "mainCrop": "Main crop",
+    "noMainCrop": "Not set",
+    "area": "Area (m²)",
+    "areaValue": "{{area}} m²",
+    "status": "Status",
+    "notes": "Notes",
+    "create": "Add greenhouse",
+    "creating": "Adding…",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "empty": "No greenhouses yet.",
+    "emptyAdmin": "Add your first greenhouse to start placing sensor nodes and assigning staff.",
+    "emptyStaff": "You are not assigned to any greenhouse yet. Ask your company admin.",
+    "planUsage": "{{used}} of {{limit}} greenhouses on your plan",
+    "planUnlimited": "{{used}} greenhouses · unlimited plan",
+    "planFull": "Plan limit reached",
+    "nodes": "{{count}} sensor nodes",
+    "nodes_one": "{{count}} sensor node",
+    "online": "{{count}} online",
+    "noNodes": "No sensor nodes placed yet.",
+    "health": "Health",
+    "noHealth": "No live data",
+    "staff": "Staff",
+    "noStaff": "No staff assigned yet.",
+    "assignStaff": "Assign staff",
+    "saveStaff": "Save staff",
+    "staffSaved": "Staff updated",
+    "staffHint": "Admins see every greenhouse. Farm managers and field officers only see the greenhouses assigned to them.",
+    "noAssignable": "No active farm managers or field officers yet. Approve staff on the Users page first.",
+    "created": "{{code}} added",
+    "updated": "Greenhouse saved",
+    "archive": "Remove greenhouse",
+    "archived": "{{code}} removed",
+    "confirmArchive": "Remove {{code}}? It will be archived and its code will never be reused.",
+    "details": "Details",
+    "edit": "Edit details",
+    "back": "Back to greenhouses",
+    "allGreenhouses": "All greenhouses",
+    "unplaced": "Not placed",
+    "placeIn": "Greenhouse",
+    "chooseGreenhouse": "Not placed in a greenhouse",
+    "sensors": "Sensors in this greenhouse",
+    "advice": "Advice for this greenhouse"
   }
 }
