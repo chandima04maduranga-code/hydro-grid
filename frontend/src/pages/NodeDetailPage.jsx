@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, CircleCheck, Cpu, LoaderCircle, MapPin, Save, Settings2, Sprout, TriangleAlert } from "lucide-react";
+import { ArrowLeft, CircleCheck, Cpu, LoaderCircle, MapPin, Save, Settings2, Sprout, TriangleAlert, Warehouse } from "lucide-react";
 import apiClient, { getErrorCode } from "../api/axiosConfig";
 import { useAuth } from "../context/AuthContext";
 import Alert from "../components/common/Alert";
@@ -11,15 +11,23 @@ import { AdviceCard } from "../components/telemetry/AdviceList";
 import { MetricTile } from "../components/telemetry/NodeCard";
 import HistoryChart from "../components/telemetry/HistoryChart";
 import { useNodeHistory, useTelemetryNodes } from "../hooks/useTelemetry";
+import { useGreenhouses } from "../hooks/useGreenhouses";
+import { displayCode } from "../utils/greenhouses";
 import { METRIC_ORDER, toneFor } from "../utils/metrics";
 
 const PERIODS = [6, 24, 168];
 const CROP_IDS = ["lettuce", "tomato", "strawberry", "bellPepper", "cucumber", "leafyGreens"];
 const EDITOR_ROLES = ["admin", "farm_manager"];
 
-const NodeSettings = ({ node, onSaved }) => {
+const NodeSettings = ({ node, canUnplace, onSaved }) => {
   const { t } = useTranslation();
-  const [form, setForm] = useState({ name: node.name, location: node.location || "", cropProfile: node.cropProfile });
+  const { greenhouses } = useGreenhouses();
+  const [form, setForm] = useState({
+    name: node.name,
+    location: node.location || "",
+    cropProfile: node.cropProfile,
+    greenhouse: node.greenhouse?._id || ""
+  });
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState(null);
 
@@ -30,7 +38,10 @@ const NodeSettings = ({ node, onSaved }) => {
     setSaving(true);
     setNotice(null);
     try {
-      const { data } = await apiClient.patch(`/telemetry/nodes/${encodeURIComponent(node.nodeId)}`, form);
+      const { data } = await apiClient.patch(`/telemetry/nodes/${encodeURIComponent(node.nodeId)}`, {
+        ...form,
+        greenhouse: form.greenhouse || null
+      });
       onSaved(data);
       setNotice({ tone: "success", text: t("telemetry.saved") });
     } catch (error) {
@@ -49,6 +60,12 @@ const NodeSettings = ({ node, onSaved }) => {
       {notice && <Alert tone={notice.tone}>{notice.text}</Alert>}
       <FormField id="node-name" label={t("telemetry.name")} icon={Cpu} value={form.name} onChange={update("name")} maxLength={80} />
       <FormField id="node-location" label={t("telemetry.location")} icon={MapPin} value={form.location} onChange={update("location")} maxLength={120} />
+      <SelectField id="node-greenhouse" label={t("greenhouses.placeIn")} icon={Warehouse} value={form.greenhouse} onChange={update("greenhouse")}>
+        <option value="" disabled={!canUnplace}>{t("greenhouses.chooseGreenhouse")}</option>
+        {greenhouses.map((greenhouse) => (
+          <option key={greenhouse._id} value={greenhouse._id}>{displayCode(t, greenhouse)} · {greenhouse.name}</option>
+        ))}
+      </SelectField>
       <SelectField id="node-crop" label={t("telemetry.crop")} icon={Sprout} value={form.cropProfile} onChange={update("cropProfile")}>
         {CROP_IDS.map((crop) => <option key={crop} value={crop}>{t(`crops.${crop}`)}</option>)}
       </SelectField>
@@ -172,6 +189,7 @@ const NodeDetailPage = () => {
             <NodeSettings
               key={node.nodeId}
               node={node}
+              canUnplace={user.role === "admin"}
               onSaved={(saved) => setNodes((current) => current.map((item) => (item.nodeId === saved.nodeId ? saved : item)))}
             />
           ) : (

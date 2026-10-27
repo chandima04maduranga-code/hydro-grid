@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import { ChevronRight, Cpu, MapPin, Wifi, WifiOff } from "lucide-react";
+import { ChevronRight, Cpu, MapPin, Warehouse, Wifi, WifiOff } from "lucide-react";
+import { displayCode } from "../../utils/greenhouses";
 import { METRIC_GROUPS, METRIC_META, METRIC_ORDER, TONE_STYLES, formatMetricValue, healthLevel, toneFor } from "../../utils/metrics";
 import { formatDateTime } from "../../utils/format";
 
@@ -52,6 +53,10 @@ const NodeCard = ({ node }) => {
             <h3 className="truncate text-lg font-extrabold text-gray-900">{node.name}</h3>
             <p className="flex flex-wrap items-center gap-x-2 text-xs text-gray-500">
               <span className="font-semibold text-gray-700">{node.nodeId}</span>
+              <span className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-semibold ${node.greenhouse ? "bg-leaf-50 text-leaf-700" : "bg-gray-100 text-gray-500"}`}>
+                <Warehouse className="h-3 w-3" aria-hidden="true" />
+                {node.greenhouse ? displayCode(t, node.greenhouse) : t("greenhouses.unplaced")}
+              </span>
               <span>· {t(`crops.${node.cropProfile}`)}</span>
               {node.location && (
                 <span className="flex items-center gap-1"><MapPin className="h-3 w-3" aria-hidden="true" />{node.location}</span>

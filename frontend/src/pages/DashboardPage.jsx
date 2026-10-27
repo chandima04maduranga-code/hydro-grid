@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Building2, CalendarDays, Cpu, Droplet, Leaf, Sprout } from "lucide-react";
+import { Building2, CalendarDays, Cpu, Droplet, Leaf, Sprout, Warehouse } from "lucide-react";
+import { useGreenhouses } from "../hooks/useGreenhouses";
+import { displayCode } from "../utils/greenhouses";
 import apiClient from "../api/axiosConfig";
 import { useAuth } from "../context/AuthContext";
 import { RoleBadge } from "../components/common/Badges";
@@ -53,8 +55,26 @@ const SectionTitle = ({ icon: Icon, title, count, tone }) => (
 const DashboardPage = () => {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
-  const { nodes, loaded, lastUpdated } = useTelemetryNodes();
+  const { nodes: allNodes, loaded, lastUpdated } = useTelemetryNodes();
+  const { greenhouses } = useGreenhouses();
   const plants = usePlants();
+  const [tab, setTab] = useState("all");
+
+  // Greenhouse tabs: everything, one per greenhouse, and unplaced nodes (admins only see those)
+  const unplacedCount = allNodes.filter((node) => !node.greenhouse).length;
+  const tabs = [
+    { key: "all", label: t("greenhouses.allGreenhouses"), count: allNodes.length },
+    ...greenhouses.map((greenhouse) => ({
+      key: greenhouse._id,
+      label: `${displayCode(t, greenhouse)} · ${greenhouse.name}`,
+      count: allNodes.filter((node) => node.greenhouse?._id === greenhouse._id).length
+    })),
+    ...(unplacedCount > 0 ? [{ key: "none", label: t("greenhouses.unplaced"), count: unplacedCount }] : [])
+  ];
+  const activeTab = tabs.some((item) => item.key === tab) ? tab : "all";
+  const nodes = activeTab === "all"
+    ? allNodes
+    : allNodes.filter((node) => (activeTab === "none" ? !node.greenhouse : node.greenhouse?._id === activeTab));
 
   return (
     <div className="space-y-8">
@@ -82,6 +102,27 @@ const DashboardPage = () => {
         )}
       </div>
 
+      {tabs.length > 2 && (
+        <div role="tablist" aria-label={t("nav.greenhouses")} className="glass flex gap-1 overflow-x-auto rounded-2xl p-1.5 shadow-sm">
+          {tabs.map((item) => (
+            <button
+              key={item.key}
+              role="tab"
+              type="button"
+              aria-selected={activeTab === item.key}
+              onClick={() => setTab(item.key)}
+              className={`flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition ${
+                activeTab === item.key ? "bg-leaf-600 text-white shadow-sm" : "text-gray-600 hover:bg-white/80 hover:text-gray-900"
+              }`}
+            >
+              {item.key !== "all" && item.key !== "none" && <Warehouse className="h-4 w-4" aria-hidden="true" />}
+              {item.label}
+              <span className={`rounded-full px-2 text-xs ${activeTab === item.key ? "bg-white/20" : "bg-gray-100"}`}>{item.count}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {loaded && nodes.length > 0 && (
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-1"><HealthSummary nodes={nodes} /></div>
@@ -91,7 +132,7 @@ const DashboardPage = () => {
 
       <section>
         <SectionTitle icon={Cpu} title={t("telemetry.nodes")} count={nodes.length} tone="bg-cyan-50 text-cyan-600" />
-        {loaded && nodes.length === 0 ? (
+        {loaded && allNodes.length === 0 ? (
           <div className="glass rounded-3xl p-8 text-center">
             <Cpu className="mx-auto h-10 w-10 text-cyan-400" aria-hidden="true" />
             <p className="mt-3 font-semibold text-gray-800">{t("telemetry.noNodes")}</p>
