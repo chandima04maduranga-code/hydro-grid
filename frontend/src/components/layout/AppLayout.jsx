@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Bell, Building2, LayoutDashboard, LogOut, Menu, ShieldCheck, Users, Warehouse, X } from "lucide-react";
+import { Bell, Building2, LayoutDashboard, LogOut, Menu, ShieldCheck, UserRound, Users, Warehouse, X } from "lucide-react";
 import apiClient from "../../api/axiosConfig";
 import { useAuth } from "../../context/AuthContext";
 import Avatar from "../common/Avatar";
 import ColomboClock from "../common/ColomboClock";
 import LanguageSwitcher from "../common/LanguageSwitcher";
 import LeafLogo from "../common/LeafLogo";
+import SidebarCrops from "./SidebarCrops";
 import { COMPANIES_CHANGED_EVENT, USERS_CHANGED_EVENT } from "../../utils/events";
 
 const PENDING_REFRESH_MS = 60000;
@@ -77,13 +78,16 @@ const AppLayout = () => {
   const pendingSource = PENDING_SOURCES[user.role];
   const pendingCount = usePendingCount(pendingSource);
 
-  const navItems = isPlatformAdmin
-    ? [{ to: "/platform/companies", label: t("nav.companies"), icon: Building2 }]
-    : [
-      { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
-      { to: "/greenhouses", label: t("nav.greenhouses"), icon: Warehouse },
-      ...(user.role === "admin" ? [{ to: "/users", label: t("nav.users"), icon: Users }] : [])
-    ];
+  const navItems = [
+    ...(isPlatformAdmin
+      ? [{ to: "/platform/companies", label: t("nav.companies"), icon: Building2 }]
+      : [
+        { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
+        { to: "/greenhouses", label: t("nav.greenhouses"), icon: Warehouse },
+        ...(user.role === "admin" ? [{ to: "/users", label: t("nav.users"), icon: Users }] : [])
+      ]),
+    { to: "/profile", label: t("nav.profile"), icon: UserRound }
+  ];
 
   const workspaceName = isPlatformAdmin ? t("nav.platform") : user.company?.name;
   const workspaceDetail = isPlatformAdmin ? t("roles.platform_admin") : user.company && t(`districts.${user.company.district}`);
@@ -111,14 +115,17 @@ const AppLayout = () => {
 
         <div className="flex-1 overflow-y-auto px-2 py-3">
           <NavItems items={navItems} pendingPath={pendingSource?.path} pendingCount={pendingCount} />
+          {!isPlatformAdmin && <SidebarCrops />}
         </div>
 
-        <div className="flex items-center gap-2.5 border-t border-gray-200 px-3 py-3">
-          <Avatar name={user.name} size="sm" />
-          <div className="min-w-0 flex-1 leading-tight">
-            <p className="truncate text-sm font-medium text-gray-900">{user.name}</p>
-            <p className="truncate text-xs text-gray-500">{t(`roles.${user.role}`)}</p>
-          </div>
+        <div className="flex items-center gap-1 border-t border-gray-200 px-2 py-2">
+          <Link to="/profile" className="flex min-w-0 flex-1 items-center gap-2.5 rounded-md px-1 py-1 hover:bg-gray-50" title={t("nav.profile")}>
+            <Avatar name={user.name} size="sm" />
+            <div className="min-w-0 flex-1 leading-tight">
+              <p className="truncate text-sm font-medium text-gray-900">{user.name}</p>
+              <p className="truncate text-xs text-gray-500">{t(`roles.${user.role}`)}</p>
+            </div>
+          </Link>
           <button
             type="button"
             onClick={logout}
@@ -177,6 +184,11 @@ const AppLayout = () => {
                 {workspaceDetail && ` · ${workspaceDetail}`}
               </p>
               <NavItems items={navItems} pendingPath={pendingSource?.path} pendingCount={pendingCount} onNavigate={() => setMenuOpen(false)} />
+              {!isPlatformAdmin && (
+                <div className="max-h-64 overflow-y-auto">
+                  <SidebarCrops onNavigate={() => setMenuOpen(false)} />
+                </div>
+              )}
               <div className="mt-2 flex items-center gap-2.5 border-t border-gray-200 px-3 pt-3">
                 <Avatar name={user.name} size="sm" />
                 <div className="min-w-0 flex-1 leading-tight">

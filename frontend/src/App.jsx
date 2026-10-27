@@ -11,6 +11,7 @@ import GreenhousesPage from "./pages/GreenhousesPage";
 import GreenhouseDetailPage from "./pages/GreenhouseDetailPage";
 import UsersPage from "./pages/UsersPage";
 import PlatformCompaniesPage from "./pages/PlatformCompaniesPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import { COMPANY_ROLES, PLATFORM_ROLES } from "./utils/roles";
 
@@ -26,6 +27,7 @@ const App = () => (
 
         <Route element={<RequireAuth />}>
           <Route element={<AppLayout />}>
+            <Route path="/profile" element={<ProfilePage />} />
             <Route element={<RequireAuth roles={COMPANY_ROLES} />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/nodes/:nodeId" element={<NodeDetailPage />} />

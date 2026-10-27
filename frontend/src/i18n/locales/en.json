@@ -134,7 +134,10 @@
     "pendingApprovals": "{{count}} pending approvals",
     "companies": "Companies",
     "platform": "Hydro_Grid platform",
-    "greenhouses": "Greenhouses"
+    "greenhouses": "Greenhouses",
+    "profile": "My profile",
+    "ourCrops": "Our crops",
+    "noCrops": "No crops added yet."
   },
   "users": {
     "title": "User management",
@@ -642,5 +645,24 @@
     "chooseGreenhouse": "Not placed in a greenhouse",
     "sensors": "Sensors in this greenhouse",
     "advice": "Advice for this greenhouse"
+  },
+  "profile": {
+    "title": "My profile",
+    "subtitle": "Your account details and the greenhouses you work in.",
+    "details": "Account details",
+    "editTitle": "Edit your details",
+    "edit": "Edit profile",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "saved": "Your profile has been updated.",
+    "role": "Role",
+    "district": "District",
+    "memberSince": "Member since",
+    "lastLogin": "Last login",
+    "never": "Never",
+    "myGreenhouses": "My greenhouses",
+    "adminSeesAll": "As an admin you can see every greenhouse in the company.",
+    "assignedOnly": "Greenhouses your admin has assigned to you.",
+    "noGreenhouses": "You have not been assigned to a greenhouse yet."
   }
 }

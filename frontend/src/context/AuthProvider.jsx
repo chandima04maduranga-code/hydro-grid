@@ -69,6 +69,14 @@ const AuthProvider = ({ children }) => {
       });
   }, [i18n, status]);
 
+  // Save own name, phone or language; the server validates and returns the user
+  const updateProfile = useCallback(async (fields) => {
+    const { data } = await apiClient.patch("/auth/me", fields);
+    setUser(data.user);
+    if (data.user.preferredLanguage !== i18n.language) i18n.changeLanguage(data.user.preferredLanguage);
+    return data.user;
+  }, [i18n]);
+
   const value = useMemo(() => ({
     user,
     status,
@@ -76,8 +84,9 @@ const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    changeLanguage
-  }), [user, status, sessionExpired, login, register, logout, changeLanguage]);
+    changeLanguage,
+    updateProfile
+  }), [user, status, sessionExpired, login, register, logout, changeLanguage, updateProfile]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
