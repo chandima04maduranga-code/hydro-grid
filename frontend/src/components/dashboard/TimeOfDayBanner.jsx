@@ -8,6 +8,12 @@ import paddy from "../../assets/photos/ambalantota-paddy-fields.webp";
 import coconutPalms from "../../assets/photos/kalutara-coconut-palms.webp";
 import teaSunlight from "../../assets/photos/ramboda-tea-sunlight.webp";
 import kandyDusk from "../../assets/photos/kandy-hills-dusk.webp";
+import tomato from "../../assets/photos/crops/tomato.webp";
+import bellPepper from "../../assets/photos/crops/bellPepper.webp";
+import lettuce from "../../assets/photos/crops/lettuce.webp";
+import leafyGreens from "../../assets/photos/crops/leafyGreens.webp";
+import strawberry from "../../assets/photos/crops/strawberry.webp";
+import cucumber from "../../assets/photos/crops/cucumber.webp";
 
 const CHECK_MS = 60000;
 
@@ -22,6 +28,16 @@ const SCENES = [
   { id: "teaSunlight", from: 17, photo: teaSunlight, position: "center 40%" },
   { id: "kandyDusk", from: 19, photo: kandyDusk, position: "center 75%" }
 ];
+
+// When one greenhouse is selected, the banner shows the crop it grows
+const CROP_SCENES = {
+  tomato: { id: "tomato", photo: tomato, position: "center 45%" },
+  bellPepper: { id: "bellPepper", photo: bellPepper, position: "center 50%" },
+  lettuce: { id: "lettuce", photo: lettuce, position: "center 55%" },
+  leafyGreens: { id: "leafyGreens", photo: leafyGreens, position: "center 40%" },
+  strawberry: { id: "strawberry", photo: strawberry, position: "center 40%" },
+  cucumber: { id: "cucumber", photo: cucumber, position: "center 40%" }
+};
 
 const colomboHour = (date) =>
   Number(new Intl.DateTimeFormat("en-GB", { timeZone: SL_TIME_ZONE, hour: "numeric", hourCycle: "h23" }).format(date));
@@ -43,17 +59,18 @@ const useColomboHour = () => {
   return hour;
 };
 
-// Dashboard header with a photo that follows the time of day in Sri Lanka
-const TimeOfDayBanner = ({ name, company, lastUpdated }) => {
+// Dashboard header: a photo of the selected greenhouse's crop, otherwise a
+// Sri Lankan farming scene that follows the time of day
+const TimeOfDayBanner = ({ name, company, lastUpdated, crop }) => {
   const { t, i18n } = useTranslation();
   const hour = useColomboHour();
-  const scene = sceneFor(hour);
+  const scene = CROP_SCENES[crop] || sceneFor(hour);
   const [loadedPhoto, setLoadedPhoto] = useState(null);
 
   return (
     <section className="relative isolate overflow-hidden rounded-lg bg-gray-900">
       <img
-        key={`${scene.id}-${scene.from}`}
+        key={`${scene.id}-${scene.from ?? "crop"}`}
         src={scene.photo}
         alt=""
         onLoad={() => setLoadedPhoto(scene.photo)}
