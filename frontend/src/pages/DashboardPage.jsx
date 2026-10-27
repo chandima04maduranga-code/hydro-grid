@@ -9,8 +9,8 @@ import { useAuth } from "../context/AuthContext";
 import HealthSummary from "../components/telemetry/HealthSummary";
 import AdviceList from "../components/telemetry/AdviceList";
 import NodeCard from "../components/telemetry/NodeCard";
+import TimeOfDayBanner from "../components/dashboard/TimeOfDayBanner";
 import { useTelemetryNodes } from "../hooks/useTelemetry";
-import { formatClock } from "../utils/format";
 import { healthLevel } from "../utils/metrics";
 
 const PLANTS_REFRESH_MS = 30000;
@@ -88,7 +88,7 @@ const GreenhouseOverview = ({ greenhouses, onSelect }) => {
 };
 
 const DashboardPage = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { nodes: allNodes, loaded, lastUpdated } = useTelemetryNodes();
   const { greenhouses } = useGreenhouses();
@@ -110,24 +110,7 @@ const DashboardPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900">{t("nav.dashboard")}</h1>
-          <p className="mt-0.5 text-sm text-gray-500">
-            {t("dashboard.greeting", { name: user.name })}
-            {user.company && <> · {user.company.name}</>}
-          </p>
-        </div>
-        {lastUpdated && (
-          <p className="flex items-center gap-2 text-xs text-gray-500">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-            </span>
-            {t("dashboard.live")} · {formatClock(lastUpdated, i18n.language)}
-          </p>
-        )}
-      </div>
+      <TimeOfDayBanner name={user.name} company={user.company} lastUpdated={lastUpdated} />
 
       {tabs.length > 2 && (
         <div role="tablist" aria-label={t("nav.greenhouses")} className="flex gap-5 overflow-x-auto border-b border-gray-200">

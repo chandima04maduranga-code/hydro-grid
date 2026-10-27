@@ -181,7 +181,21 @@
     "cropType": "Crop type",
     "systemId": "System ID",
     "growthStage": "Growth stage",
-    "updated": "Updated {{time}}"
+    "updated": "Updated {{time}}",
+    "period": {
+      "morning": "Good morning, {{name}}",
+      "afternoon": "Good afternoon, {{name}}",
+      "evening": "Good evening, {{name}}"
+    },
+    "scenes": {
+      "mistyTea": "Misty tea estate, Nuwara Eliya",
+      "hillFarm": "Hill-country tea and vegetables, Nuwara Eliya",
+      "paddy": "Paddy fields, Ambalantota",
+      "coconutPalms": "Coconut palms, Kalutara",
+      "teaSunlight": "Tea estate in the evening sun, Ramboda",
+      "kandyDusk": "Kandy hills at dusk"
+    },
+    "photoBy": "Photo: {{name}}"
   },
   "notFound": {
     "title": "Page not found",
