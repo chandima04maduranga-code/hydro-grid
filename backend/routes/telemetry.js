@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Company = require('../models/Company');
+const Greenhouse = require('../models/Greenhouse');
 const SensorNode = require('../models/SensorNode');
 const Reading = require('../models/Reading');
 const auth = require('../middleware/auth');
@@ -10,8 +11,29 @@ const { METRICS, METRIC_IDS } = require('../config/metrics');
 const { CROPS, CROP_IDS } = require('../config/crops');
 const { PLANS } = require('../config/plans');
 const { assessNode, rangesFor } = require('../services/advisor');
+const { greenhouseFilterFor, seesAllGreenhouses, visibleGreenhouseIds } = require('../services/access');
 
 const router = express.Router();
+
+const GREENHOUSE_FIELDS = 'code name district number';
+
+// Nodes the user may see: admins see all (optionally one greenhouse or the
+// unplaced ones); other staff only nodes in their assigned greenhouses
+const nodeFilterFor = async (req, greenhouseParam) => {
+  const filter = { company: req.companyId };
+  const visible = await visibleGreenhouseIds(req.user);
+
+  if (greenhouseParam === 'none') {
+    filter.greenhouse = visible === null ? null : { $in: [] };
+  } else if (greenhouseParam) {
+    const allowed = mongoose.isValidObjectId(greenhouseParam)
+      && (visible === null || visible.some((id) => String(id) === String(greenhouseParam)));
+    filter.greenhouse = allowed ? greenhouseParam : { $in: [] };
+  } else if (visible !== null) {
+    filter.greenhouse = { $in: visible };
+  }
+  return filter;
+};
 
 const NODE_ID_PATTERN = /^[A-Za-z0-9_-]{2,40}$/;
 // A node that has not reported for this long is shown as offline
@@ -102,11 +124,12 @@ router.get('/options', (req, res) => {
   });
 });
 
-// @route   GET /api/telemetry/nodes
-// @desc    The company's nodes with latest readings, online state and advice
+// @route   GET /api/telemetry/nodes?greenhouse=<id>|none
+// @desc    Visible nodes with latest readings, online state and advice
 router.get('/nodes', async (req, res) => {
   try {
-    const nodes = await SensorNode.find({ company: req.companyId }).sort({ nodeId: 1 });
+    const filter = await nodeFilterFor(req, req.query.greenhouse);
+    const nodes = await SensorNode.find(filter).populate('greenhouse', GREENHOUSE_FIELDS).sort({ nodeId: 1 });
     const now = new Date();
     res.json(nodes.map((node) => withAssessment(node, now)));
   } catch (err) {
@@ -122,7 +145,7 @@ router.get('/nodes/:nodeId/history', async (req, res) => {
   const binMinutes = hours <= 6 ? 5 : hours <= 24 ? 15 : 60;
 
   try {
-    const node = await SensorNode.findOne({ company: req.companyId, nodeId: req.params.nodeId });
+    const node = await SensorNode.findOne({ ...(await nodeFilterFor(req)), nodeId: req.params.nodeId });
     if (!node) return res.status(404).json({ code: 'NODE_NOT_FOUND', message: 'Sensor node not found' });
 
     const rows = await Reading.aggregate([
@@ -147,26 +170,35 @@ router.get('/nodes/:nodeId/history', async (req, res) => {
 });
 
 // @route   PATCH /api/telemetry/nodes/:nodeId
-// @desc    Rename a node, set its location or crop profile
-// @access  Company admins and farm managers
+// @desc    Rename a node, set its location, crop profile or greenhouse (null = unplaced)
+// @access  Company admins and farm managers (managers only within their greenhouses)
 router.patch('/nodes/:nodeId', requireRole('admin', 'farm_manager'), async (req, res) => {
-  const { name, location, cropProfile } = req.body;
+  const { name, location, cropProfile, greenhouse } = req.body;
   const errors = {};
   if (name !== undefined && (typeof name !== 'string' || !name.trim() || name.length > 80)) errors.name = 'REQUIRED';
   if (location !== undefined && (typeof location !== 'string' || location.length > 120)) errors.location = 'REQUIRED';
   if (cropProfile !== undefined && !CROP_IDS.includes(cropProfile)) errors.cropProfile = 'REQUIRED';
+  if (greenhouse !== undefined && greenhouse !== null && !mongoose.isValidObjectId(greenhouse)) errors.greenhouse = 'REQUIRED';
+  if (greenhouse === null && !seesAllGreenhouses(req.user)) errors.greenhouse = 'REQUIRED';
   if (Object.keys(errors).length > 0) {
     return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'Please correct the highlighted fields', errors });
   }
 
   try {
-    const node = await SensorNode.findOne({ company: req.companyId, nodeId: req.params.nodeId });
+    const node = await SensorNode.findOne({ ...(await nodeFilterFor(req)), nodeId: req.params.nodeId });
     if (!node) return res.status(404).json({ code: 'NODE_NOT_FOUND', message: 'Sensor node not found' });
+
+    if (greenhouse) {
+      const target = await Greenhouse.exists({ _id: greenhouse, ...greenhouseFilterFor(req.user) });
+      if (!target) return res.status(404).json({ code: 'GREENHOUSE_NOT_FOUND', message: 'Greenhouse not found' });
+    }
 
     if (name !== undefined) node.name = name.trim();
     if (location !== undefined) node.location = location.trim();
     if (cropProfile !== undefined) node.cropProfile = cropProfile;
+    if (greenhouse !== undefined) node.greenhouse = greenhouse;
     await node.save();
+    await node.populate('greenhouse', GREENHOUSE_FIELDS);
     res.json(withAssessment(node));
   } catch (err) {
     serverError(res, 'Update node error', err);
