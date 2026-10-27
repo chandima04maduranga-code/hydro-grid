@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
 import { ChevronRight, Cpu, Leaf, Warehouse } from "lucide-react";
 import { useGreenhouses } from "../hooks/useGreenhouses";
 import { displayCode } from "../utils/greenhouses";
-import apiClient from "../api/axiosConfig";
 import { useAuth } from "../context/AuthContext";
 import HealthSummary from "../components/telemetry/HealthSummary";
 import HealthRing from "../components/telemetry/HealthRing";
@@ -12,36 +11,13 @@ import AdviceList from "../components/telemetry/AdviceList";
 import NodeCard from "../components/telemetry/NodeCard";
 import TimeOfDayBanner from "../components/dashboard/TimeOfDayBanner";
 import { useTelemetryNodes } from "../hooks/useTelemetry";
+import { usePlants } from "../hooks/usePlants";
 import { HEALTH_COLORS, healthLevel } from "../utils/metrics";
-
-const PLANTS_REFRESH_MS = 30000;
 
 const PLANT_HEALTH_STYLES = {
   Healthy: "bg-emerald-100 text-emerald-800",
   "Nutrient Warning": "bg-amber-100 text-amber-800",
   Critical: "bg-red-100 text-red-800"
-};
-
-const usePlants = () => {
-  const [plants, setPlants] = useState([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const load = () =>
-      apiClient.get("/plants")
-        .then(({ data }) => {
-          if (!cancelled) setPlants(data);
-        })
-        .catch(() => {});
-    load();
-    const timer = setInterval(load, PLANTS_REFRESH_MS);
-    return () => {
-      cancelled = true;
-      clearInterval(timer);
-    };
-  }, []);
-
-  return plants;
 };
 
 const SectionHeading = ({ icon: Icon, title, count }) => (
