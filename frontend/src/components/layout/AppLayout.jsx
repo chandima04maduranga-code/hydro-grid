@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Bell, Building2, LayoutDashboard, LogOut, ShieldCheck, Users } from "lucide-react";
+import { Bell, Building2, LayoutDashboard, LogOut, ShieldCheck, Users, Warehouse } from "lucide-react";
 import apiClient from "../../api/axiosConfig";
 import { useAuth } from "../../context/AuthContext";
 import Avatar from "../common/Avatar";
@@ -60,6 +60,7 @@ const AppLayout = () => {
     ? [{ to: "/platform/companies", label: t("nav.companies"), icon: Building2 }]
     : [
       { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
+      { to: "/greenhouses", label: t("nav.greenhouses"), icon: Warehouse },
       ...(user.role === "admin" ? [{ to: "/users", label: t("nav.users"), icon: Users }] : [])
     ];
 

@@ -7,6 +7,8 @@ import RegisterPage from "./pages/RegisterPage";
 import RegisterCompanyPage from "./pages/RegisterCompanyPage";
 import DashboardPage from "./pages/DashboardPage";
 import NodeDetailPage from "./pages/NodeDetailPage";
+import GreenhousesPage from "./pages/GreenhousesPage";
+import GreenhouseDetailPage from "./pages/GreenhouseDetailPage";
 import UsersPage from "./pages/UsersPage";
 import PlatformCompaniesPage from "./pages/PlatformCompaniesPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -27,6 +29,8 @@ const App = () => (
             <Route element={<RequireAuth roles={COMPANY_ROLES} />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/nodes/:nodeId" element={<NodeDetailPage />} />
+              <Route path="/greenhouses" element={<GreenhousesPage />} />
+              <Route path="/greenhouses/:id" element={<GreenhouseDetailPage />} />
               <Route element={<RequireAuth roles={["admin"]} />}>
                 <Route path="/users" element={<UsersPage />} />
               </Route>
