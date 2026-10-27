@@ -29,6 +29,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/companies', require('./routes/companies'));
 app.use('/api/platform', require('./routes/platform'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/greenhouses', require('./routes/greenhouses'));
 app.use('/api/plants', require('./routes/plants'));
 app.use('/api/telemetry', require('./routes/telemetry'));
 
