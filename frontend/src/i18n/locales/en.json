@@ -53,16 +53,15 @@
     "remember": "Keep me logged in",
     "submit": "Log in",
     "submitting": "Logging in…",
-    "or": "or",
     "noAccount": "New to Hydro_Grid?",
     "register": "Request access",
-    "secureTitle": "Secure access",
     "secureText": "Every account is approved by your farm administrator.",
     "company": "Company",
     "chooseCompany": "Choose your company",
     "platformOption": "Hydro_Grid platform (administrators)",
     "registerCompany": "Register your company",
-    "newCompany": "Running a farming company?"
+    "newCompany": "Running a farming company?",
+    "noCompanies": "No companies are registered yet. Use “Register your company” below."
   },
   "register": {
     "title": "Request access",

@@ -22,7 +22,7 @@ const LoginPage = () => {
   const { login, sessionExpired } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { companies } = useCompanies();
+  const { companies, loading: loadingCompanies } = useCompanies();
 
   const [companyId, setCompanyId] = useState(readLastCompany);
   const [email, setEmail] = useState("");
@@ -53,7 +53,7 @@ const LoginPage = () => {
   return (
     <AuthShell photo={greenhousePhoto} photoCredit={t("credits.greenhouse")}>
       <AuthCard title={t("login.title")} subtitle={t("login.subtitle")}>
-        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-3.5" noValidate>
           {errorCode && (
             <Alert tone={WARNING_CODES.includes(errorCode) ? "warning" : "error"}>
               {t(`errors.${errorCode}`, { defaultValue: t("errors.default") })}
@@ -66,6 +66,7 @@ const LoginPage = () => {
             icon={Building2}
             value={companyId}
             onChange={(event) => setCompanyId(event.target.value)}
+            hint={!loadingCompanies && companies.length === 0 ? t("login.noCompanies") : undefined}
             required
           >
             <option value="" disabled>{t("login.chooseCompany")}</option>
@@ -111,7 +112,7 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-leaf-500 to-tea-600 px-4 py-3.5 text-base font-bold text-white shadow-lg shadow-leaf-500/30 transition hover:from-leaf-600 hover:to-tea-700 focus:outline-none focus:ring-4 focus:ring-leaf-500/30 disabled:cursor-not-allowed disabled:opacity-70"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-leaf-500 to-tea-600 px-4 py-3 text-base font-bold text-white shadow-lg shadow-leaf-500/30 transition hover:from-leaf-600 hover:to-tea-700 focus:outline-none focus:ring-4 focus:ring-leaf-500/30 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {submitting
               ? <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" />
@@ -120,33 +121,28 @@ const LoginPage = () => {
           </button>
         </form>
 
-        <div className="my-6 flex items-center gap-3 text-xs text-gray-400">
-          <span className="h-px flex-1 bg-gray-200" />
-          {t("login.or")}
-          <span className="h-px flex-1 bg-gray-200" />
+        <div className="mt-4 grid grid-cols-2 gap-2.5">
+          <Link
+            to="/register"
+            title={`${t("login.noAccount")} ${t("login.register")}`}
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-leaf-500/40 bg-white/70 px-3 py-2.5 text-center text-sm font-semibold text-leaf-700 transition hover:bg-leaf-50"
+          >
+            <UserPlus className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {t("login.register")}
+          </Link>
+          <Link
+            to="/register-company"
+            title={`${t("login.newCompany")} ${t("login.registerCompany")}`}
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-gold-400/50 bg-gold-100/60 px-3 py-2.5 text-center text-sm font-semibold text-gold-600 transition hover:bg-gold-100"
+          >
+            <Building2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {t("login.registerCompany")}
+          </Link>
         </div>
 
-        <Link
-          to="/register"
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-leaf-500/40 bg-white/70 px-4 py-3 text-sm font-semibold text-leaf-700 transition hover:bg-leaf-50"
-        >
-          <UserPlus className="h-4 w-4" aria-hidden="true" />
-          {t("login.noAccount")} {t("login.register")}
-        </Link>
-        <Link
-          to="/register-company"
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-gold-400/50 bg-gold-100/60 px-4 py-3 text-sm font-semibold text-gold-600 transition hover:bg-gold-100"
-        >
-          <Building2 className="h-4 w-4" aria-hidden="true" />
-          {t("login.newCompany")} {t("login.registerCompany")}
-        </Link>
-
-        <div className="mt-6 flex items-start gap-3 rounded-2xl bg-leaf-50/80 p-4">
-          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-leaf-600" aria-hidden="true" />
-          <div className="text-xs text-gray-600">
-            <p className="font-semibold text-gray-800">{t("login.secureTitle")}</p>
-            <p className="mt-0.5">{t("login.secureText")}</p>
-          </div>
+        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
+          <ShieldCheck className="h-4 w-4 shrink-0 text-leaf-600" aria-hidden="true" />
+          <span>{t("login.secureText")}</span>
         </div>
       </AuthCard>
     </AuthShell>
