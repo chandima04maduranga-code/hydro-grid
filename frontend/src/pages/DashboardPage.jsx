@@ -57,7 +57,7 @@ const DashboardPage = () => {
   const { user } = useAuth();
   const { nodes: allNodes, loaded, lastUpdated } = useTelemetryNodes();
   const { greenhouses } = useGreenhouses();
-  const plants = usePlants();
+  const allPlants = usePlants();
   const [tab, setTab] = useState("all");
 
   // Greenhouse tabs: everything, one per greenhouse, and unplaced nodes (admins only see those)
@@ -72,9 +72,9 @@ const DashboardPage = () => {
     ...(unplacedCount > 0 ? [{ key: "none", label: t("greenhouses.unplaced"), count: unplacedCount }] : [])
   ];
   const activeTab = tabs.some((item) => item.key === tab) ? tab : "all";
-  const nodes = activeTab === "all"
-    ? allNodes
-    : allNodes.filter((node) => (activeTab === "none" ? !node.greenhouse : node.greenhouse?._id === activeTab));
+  const inTab = (item) => (activeTab === "none" ? !item.greenhouse : item.greenhouse?._id === activeTab);
+  const nodes = activeTab === "all" ? allNodes : allNodes.filter(inTab);
+  const plants = activeTab === "all" ? allPlants : allPlants.filter(inTab);
 
   return (
     <div className="space-y-8">
@@ -167,6 +167,12 @@ const DashboardPage = () => {
                       <div>
                         <h3 className="text-lg font-bold text-gray-900">{plant.name}</h3>
                         <p className="text-sm italic text-gray-500">({plant.species})</p>
+                        {plant.greenhouse && (
+                          <p className="mt-1 inline-flex items-center gap-1 rounded-md bg-leaf-50 px-1.5 py-0.5 text-xs font-semibold text-leaf-700">
+                            <Warehouse className="h-3 w-3" aria-hidden="true" />
+                            {displayCode(t, plant.greenhouse)} · {plant.greenhouse.name}
+                          </p>
+                        )}
                       </div>
                       <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ring-1 ring-inset ${health.pill}`}>
                         <span className={`h-2 w-2 rounded-full ${health.dot}`} />

@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 
 const plantSchema = new mongoose.Schema({
   company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true, index: true },
+  // Greenhouse the crop grows in; staff only see crops of their greenhouses
+  greenhouse: { type: mongoose.Schema.Types.ObjectId, ref: 'Greenhouse', default: null, index: true },
   name: { type: String, required: true },
   species: { type: String, required: true },
   healthStatus: { type: String, default: 'Healthy' },
