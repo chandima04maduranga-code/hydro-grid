@@ -118,15 +118,23 @@ Hydro_Grid/
    npm run setup-demo
    ```
 
-   This creates Agri Lanka (Pvt) Ltd and Green Farmers (Pvt) Ltd (already approved) with role-based demo staff (`admin@agrilanka.test`, `manager@agrilanka.test`, `officer1@agrilanka.test`, … `officer@greenfarmers.test`), greenhouses with assigned staff, one sensor node per greenhouse with 24 hours of readings, and crop records. All demo accounts share the password in `DEMO_PASSWORD` (backend/.env), or the one you type when asked. It prints the simulator command for each company.
+   This creates Agri Lanka (Pvt) Ltd and Green Farmers (Pvt) Ltd (already approved) with role-based demo staff (`admin@agrilanka.test`, `manager@agrilanka.test`, `officer1@agrilanka.test`, … `officer@greenfarmers.test`), greenhouses with assigned staff, one sensor node per greenhouse with 24 hours of readings, and crop records. All demo accounts share the password in `DEMO_PASSWORD` (backend/.env), or the one you type when asked. It also creates a device key for each company (saved to the git-ignored `backend/.device-keys.json`) and prints the simulator command for each company.
 
 6. **Start virtual IoT nodes** for a company (optional, third terminal)
+
+   Sensor nodes need the company's device key. Create one (the demo setup already did this for the demo companies):
+
+   ```bash
+   npm run device-key -- <companyId>
+   ```
+
+   Then start the nodes:
 
    ```bash
    npm run simulate -- <companyId> 2 10
    ```
 
-   Starts 2 nodes reporting every 10 seconds. The simulator follows Sri Lanka time (warm afternoons, humid nights), drifts reservoir level, pH and EC faster than real life so advice appears within minutes, and occasionally simulates an air-pump failure. The company id is shown on the dashboard when no nodes are reporting yet.
+   Starts 2 nodes reporting every 10 seconds. The simulator follows Sri Lanka time (warm afternoons, humid nights), drifts reservoir level, pH and EC faster than real life so advice appears within minutes, and now and then simulates an air-pump failure or a blocked circulation pump (the water flow drops and the grow bags dry out).
 
 ### Upgrading an existing database
 
@@ -136,9 +144,22 @@ Run migrations in order from the `backend` folder:
 node scripts/migrations/001-sensor-ids-per-company.js
 ```
 
+## Security
+
+- **Login sessions** use an `httpOnly`, `SameSite=Lax` cookie. Page scripts and browser storage never hold the token, so it can't be copied from the developer tools console or stolen by injected scripts. Logging out clears the cookie on the server.
+- **Passwords** are hashed with bcrypt and never returned by the API.
+- **Sensor nodes** send readings with a secret device key (`X-Device-Key` header). Only its SHA-256 hash is stored, and a company's data can't be faked by someone who only knows its id.
+- **Rate limits**: 10 login attempts per 15 minutes and 10 sign-ups per hour per address, plus a general API limit.
+- **Input**: request bodies are limited to 100 KB and MongoDB operators (`$...`) are stripped, so values like `{ "$ne": null }` can't change a query. Server and client both validate fields.
+- **Headers**: Helmet sets security headers and hides the Express version. CORS only allows the Hydro_Grid frontend.
+- **Errors** return short JSON messages, never stack traces. Production builds ship without source maps.
+- **Data isolation**: every query is scoped to the user's company, and staff only see their assigned greenhouses.
+
+Whatever the browser shows (the page, and the data the logged-in user may see) is always visible in the developer tools. That is normal for every website. What is protected is the login token, passwords, device keys and other companies' data.
+
 ## API overview
 
-Authenticated requests send `Authorization: Bearer <token>`. Errors return a machine-readable `code` (for example `COMPANY_PENDING`) that the UI translates.
+The browser sends the session cookie automatically. API clients may instead send `Authorization: Bearer <token>`. Errors return a machine-readable `code` (for example `COMPANY_PENDING`) that the UI translates.
 
 | Method | Endpoint                                   | Auth           | Description                                        |
 | ------ | ------------------------------------------ | -------------- | -------------------------------------------------- |
@@ -147,7 +168,8 @@ Authenticated requests send `Authorization: Bearer <token>`. Errors return a mac
 | GET    | `/api/companies`                           | Public         | Active companies (for the company picker)          |
 | POST   | `/api/companies/register`                  | Public         | Register a company and its admin (pending review)  |
 | POST   | `/api/auth/register`                       | Public         | Request access to a company (pending approval)     |
-| POST   | `/api/auth/login`                          | Public         | Log in to a company or the platform, returns a JWT |
+| POST   | `/api/auth/login`                          | Public         | Log in to a company or the platform (sets the session cookie) |
+| POST   | `/api/auth/logout`                         | Public         | Clear the session cookie                           |
 | GET    | `/api/auth/me`                             | User           | Current user's profile and company                  |
 | PATCH  | `/api/auth/me`                             | User           | Update own name, phone or language                 |
 | GET    | `/api/users?status=`                       | Company admin  | List the company's users                           |
@@ -163,7 +185,7 @@ Authenticated requests send `Authorization: Bearer <token>`. Errors return a mac
 | DELETE | `/api/greenhouses/:id`                     | Company admin  | Archive a greenhouse without sensor nodes          |
 | GET    | `/api/plants`                              | Company user   | List the company's crop systems                    |
 | POST   | `/api/plants`                              | Admin, manager | Create a crop system                               |
-| POST   | `/api/telemetry`                           | Devices        | Ingest a batch of readings from one node           |
+| POST   | `/api/telemetry`                           | Device key     | Ingest a batch of readings from one node           |
 | GET    | `/api/telemetry/options`                   | Company user   | Metric units and crop target bands                 |
 | GET    | `/api/telemetry/nodes?greenhouse=`         | Company user   | Visible nodes with readings, advice and health     |
 | GET    | `/api/telemetry/nodes/:nodeId/history`     | Company user   | Averaged history for charts (`?hours=6/24/168`)    |
@@ -193,5 +215,6 @@ Authenticated requests send `Authorization: Bearer <token>`. Errors return a mac
 - [x] Greenhouse management (e.g. "Nuwara Eliya GH-01") with staff assignment
 - [ ] Plant management (full CRUD with validation)
 - [x] Multi-sensor IoT telemetry with farmer advice, health score and history charts
-- [ ] Security hardening (device API keys, rate limiting)
+- [x] Colourful hydroponic dashboard with fix steps for every problem
+- [x] Security hardening (session cookies, device keys, rate limiting, headers)
 - [ ] Automated tests, Docker and CI/CD deployment
