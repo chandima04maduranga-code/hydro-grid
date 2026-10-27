@@ -26,6 +26,10 @@
   --color-leaf-500: #2f9e44;
   --color-leaf-600: #237a35;
   --color-leaf-700: #1b602a;
+  --color-leaf-800: #154d22;
+
+  /* Neutral canvas behind the logged-in app */
+  --color-canvas: #f4f5f7;
 
   --color-gold-100: #f7ecd4;
   --color-gold-300: #e6c27a;
@@ -63,6 +67,61 @@
   border: 1px solid rgb(255 255 255 / 0.7);
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+/*
+ * Logged-in app: flat, bordered surfaces and solid controls, the way
+ * operations software is usually built. (The frosted `glass` style above
+ * is kept for the photo-based sign-in pages only.)
+ */
+@utility panel {
+  background-color: #ffffff;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.5rem;
+}
+
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 2.25rem;
+  padding: 0 0.875rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 120ms, border-color 120ms, color 120ms;
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+@utility btn-primary {
+  background-color: var(--color-leaf-700);
+  color: #ffffff;
+  &:hover:not(:disabled) {
+    background-color: var(--color-leaf-800);
+  }
+}
+
+@utility btn-secondary {
+  background-color: #ffffff;
+  color: var(--color-gray-700);
+  border: 1px solid var(--color-gray-300);
+  &:hover:not(:disabled) {
+    background-color: var(--color-gray-50);
+  }
+}
+
+@utility btn-danger {
+  background-color: #ffffff;
+  color: var(--color-red-700);
+  border: 1px solid var(--color-red-200);
+  &:hover:not(:disabled) {
+    background-color: var(--color-red-50);
+  }
 }
 
 /* Geometric band inspired by Dumbara weaving, used as a decorative accent */

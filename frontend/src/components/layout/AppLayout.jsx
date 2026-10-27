@@ -1,17 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Bell, Building2, LayoutDashboard, LogOut, ShieldCheck, Users, Warehouse } from "lucide-react";
+import { Bell, Building2, LayoutDashboard, LogOut, Menu, ShieldCheck, Users, Warehouse, X } from "lucide-react";
 import apiClient from "../../api/axiosConfig";
 import { useAuth } from "../../context/AuthContext";
 import Avatar from "../common/Avatar";
-import BrandMark from "../common/BrandMark";
-import LeafLogo from "../common/LeafLogo";
 import ColomboClock from "../common/ColomboClock";
 import LanguageSwitcher from "../common/LanguageSwitcher";
-import { RoleBadge } from "../common/Badges";
+import LeafLogo from "../common/LeafLogo";
 import { COMPANIES_CHANGED_EVENT, USERS_CHANGED_EVENT } from "../../utils/events";
-import greenhousePhoto from "../../assets/photos/greenhouse-strawberries.webp";
 
 const PENDING_REFRESH_MS = 60000;
 
@@ -49,9 +46,33 @@ const usePendingCount = (source) => {
   return source ? count : 0;
 };
 
+const NavItems = ({ items, pendingPath, pendingCount, onNavigate }) => (
+  <nav className="space-y-0.5" aria-label="Main">
+    {items.map(({ to, label, icon: Icon }) => (
+      <NavLink
+        key={to}
+        to={to}
+        onClick={onNavigate}
+        className={({ isActive }) =>
+          `flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
+            isActive ? "bg-leaf-50 font-semibold text-leaf-800" : "font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+          }`
+        }
+      >
+        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+        <span className="flex-1">{label}</span>
+        {to === pendingPath && pendingCount > 0 && (
+          <span className="rounded bg-amber-100 px-1.5 text-xs font-semibold text-amber-800">{pendingCount}</span>
+        )}
+      </NavLink>
+    ))}
+  </nav>
+);
+
 const AppLayout = () => {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
   const isPlatformAdmin = user.role === "platform_admin";
   const pendingSource = PENDING_SOURCES[user.role];
   const pendingCount = usePendingCount(pendingSource);
@@ -64,104 +85,117 @@ const AppLayout = () => {
       ...(user.role === "admin" ? [{ to: "/users", label: t("nav.users"), icon: Users }] : [])
     ];
 
+  const workspaceName = isPlatformAdmin ? t("nav.platform") : user.company?.name;
+  const workspaceDetail = isPlatformAdmin ? t("roles.platform_admin") : user.company && t(`districts.${user.company.district}`);
+
   return (
-    <div className="relative min-h-screen">
-      {/* Soft, blurred greenhouse photo behind the whole app */}
-      <div className="fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
-        <img src={greenhousePhoto} alt="" className="h-full w-full scale-110 object-cover blur-xl" />
-        <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/70 to-leaf-50/80" />
-      </div>
+    <div className="min-h-screen bg-canvas lg:flex">
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-gray-200 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen">
+        <Link to="/" className="flex h-14 items-center gap-2 border-b border-gray-200 px-4">
+          <LeafLogo className="h-7 w-7" />
+          <span className="text-base font-semibold text-gray-900">Hydro_Grid</span>
+        </Link>
 
-      <header className="sticky top-0 z-30 px-3 pt-3 sm:px-6 sm:pt-5">
-        <div className="glass mx-auto max-w-7xl overflow-hidden rounded-2xl shadow-lg shadow-tea-900/10">
-          <div className="flex items-center gap-3 px-4 py-3 sm:gap-5 sm:px-6">
-            <Link to="/" className="shrink-0">
-              <span className="hidden sm:block"><BrandMark /></span>
-              <span className="sm:hidden"><LeafLogo className="h-9 w-9" /></span>
+        <div className="border-b border-gray-200 px-4 py-3">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-gray-400">
+            {isPlatformAdmin ? t("nav.platform") : t("login.company")}
+          </p>
+          <p className="mt-0.5 flex items-center gap-1.5 text-sm font-semibold text-gray-900" title={workspaceName}>
+            {isPlatformAdmin
+              ? <ShieldCheck className="h-4 w-4 shrink-0 text-leaf-700" aria-hidden="true" />
+              : <Building2 className="h-4 w-4 shrink-0 text-gray-400" aria-hidden="true" />}
+            <span className="truncate">{workspaceName}</span>
+          </p>
+          {!isPlatformAdmin && <p className="mt-0.5 pl-5.5 text-xs text-gray-500">{workspaceDetail}</p>}
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-2 py-3">
+          <NavItems items={navItems} pendingPath={pendingSource?.path} pendingCount={pendingCount} />
+        </div>
+
+        <div className="flex items-center gap-2.5 border-t border-gray-200 px-3 py-3">
+          <Avatar name={user.name} size="sm" />
+          <div className="min-w-0 flex-1 leading-tight">
+            <p className="truncate text-sm font-medium text-gray-900">{user.name}</p>
+            <p className="truncate text-xs text-gray-500">{t(`roles.${user.role}`)}</p>
+          </div>
+          <button
+            type="button"
+            onClick={logout}
+            className="rounded-md p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-red-700"
+            aria-label={t("nav.logout")}
+            title={t("nav.logout")}
+          >
+            <LogOut className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-20 border-b border-gray-200 bg-white">
+          <div className="flex h-14 items-center gap-3 px-4 sm:px-6">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((open) => !open)}
+              className="-ml-1 rounded-md p-2 text-gray-600 hover:bg-gray-100 lg:hidden"
+              aria-label="Menu"
+              aria-expanded={menuOpen}
+            >
+              {menuOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
+            </button>
+            <Link to="/" className="flex items-center gap-2 lg:hidden">
+              <LeafLogo className="h-6 w-6" />
+              <span className="hidden text-sm font-semibold text-gray-900 sm:inline">Hydro_Grid</span>
             </Link>
+            <p className="hidden truncate text-sm text-gray-500 lg:block">{t("app.tagline")}</p>
 
-            <div className="hidden flex-1 text-center xl:block">
-              <p className="text-lg font-extrabold text-gray-900">{t("nav.controlPanel")}</p>
-              <p className="text-xs text-gray-500">{t("dashboard.subtitle")}</p>
-            </div>
-
-            <div className="ml-auto flex items-center gap-2 sm:gap-3 xl:ml-0">
-              <ColomboClock className="hidden lg:flex" />
+            <div className="ml-auto flex items-center gap-2 sm:gap-3">
+              <ColomboClock className="hidden md:flex" />
               <LanguageSwitcher />
               {pendingSource && (
                 <Link
                   to={pendingSource.path}
-                  className="relative rounded-full p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-800"
+                  className="relative rounded-md p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
                   aria-label={t("nav.pendingApprovals", { count: pendingCount })}
                   title={t("nav.pendingApprovals", { count: pendingCount })}
                 >
                   <Bell className="h-5 w-5" aria-hidden="true" />
                   {pendingCount > 0 && (
-                    <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-clay-500 px-1 text-[10px] font-bold text-white">
+                    <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
                       {pendingCount}
                     </span>
                   )}
                 </Link>
               )}
-              <div className="hidden items-center gap-2.5 md:flex">
-                <Avatar name={user.name} size="sm" />
-                <div className="hidden leading-tight 2xl:block">
-                  <p className="max-w-40 truncate text-sm font-semibold text-gray-900">{user.name}</p>
-                  <RoleBadge role={user.role} />
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={logout}
-                className="flex items-center gap-2 rounded-xl bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-md shadow-red-600/20 transition hover:bg-red-700 sm:px-4"
-              >
-                <LogOut className="h-4 w-4" aria-hidden="true" />
-                <span className="hidden sm:inline">{t("nav.logout")}</span>
-              </button>
             </div>
           </div>
 
-          <nav className="flex items-center gap-1 border-t border-white/60 bg-white/40 px-3 py-1.5 sm:px-5" aria-label="Main">
-            {navItems.map(({ to, label, icon: Icon }) => (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) =>
-                  `flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
-                    isActive ? "bg-leaf-600 text-white shadow-sm" : "text-gray-600 hover:bg-white/80 hover:text-gray-900"
-                  }`
-                }
-              >
-                <Icon className="h-4 w-4" aria-hidden="true" />
-                {label}
-              </NavLink>
-            ))}
+          {menuOpen && (
+            <div className="border-t border-gray-200 px-3 pb-3 pt-2 lg:hidden">
+              <p className="px-3 pb-2 text-xs text-gray-500">
+                <span className="font-semibold text-gray-900">{workspaceName}</span>
+                {workspaceDetail && ` · ${workspaceDetail}`}
+              </p>
+              <NavItems items={navItems} pendingPath={pendingSource?.path} pendingCount={pendingCount} onNavigate={() => setMenuOpen(false)} />
+              <div className="mt-2 flex items-center gap-2.5 border-t border-gray-200 px-3 pt-3">
+                <Avatar name={user.name} size="sm" />
+                <div className="min-w-0 flex-1 leading-tight">
+                  <p className="truncate text-sm font-medium text-gray-900">{user.name}</p>
+                  <p className="truncate text-xs text-gray-500">{t(`roles.${user.role}`)}</p>
+                </div>
+                <button type="button" onClick={logout} className="btn btn-secondary">
+                  <LogOut className="h-4 w-4" aria-hidden="true" />
+                  {t("nav.logout")}
+                </button>
+              </div>
+            </div>
+          )}
+        </header>
 
-            {/* Which company (workspace) this session belongs to */}
-            <span
-              className={`ml-auto inline-flex min-w-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold ${
-                isPlatformAdmin ? "bg-tea-800 text-white" : "bg-white/80 text-tea-800 ring-1 ring-leaf-500/30"
-              }`}
-              title={isPlatformAdmin ? t("nav.platform") : user.company?.name}
-            >
-              {isPlatformAdmin
-                ? <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-leaf-400" aria-hidden="true" />
-                : <Building2 className="h-3.5 w-3.5 shrink-0 text-leaf-600" aria-hidden="true" />}
-              <span className="truncate">
-                {isPlatformAdmin ? t("nav.platform") : user.company?.name}
-              </span>
-              {!isPlatformAdmin && user.company?.district && (
-                <span className="hidden font-medium text-gray-500 sm:inline">· {t(`districts.${user.company.district}`)}</span>
-              )}
-            </span>
-          </nav>
-          <div className="dumbara-band opacity-70" />
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-3 py-6 sm:px-6 sm:py-8">
-        <Outlet />
-      </main>
+        <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 sm:px-6">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };
