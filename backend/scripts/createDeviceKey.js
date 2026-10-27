@@ -19,7 +19,7 @@ const main = async () => {
 
   await connectDb();
   const key = generateDeviceKey();
-  const company = await Company.findByIdAndUpdate(companyId, { deviceKeyHash: hashDeviceKey(key) }, { new: true });
+  const company = await Company.findByIdAndUpdate(companyId, { deviceKeyHash: hashDeviceKey(key) }, { returnDocument: 'after' });
   if (!company) {
     console.error('❌ No company with that id.');
     process.exitCode = 1;
