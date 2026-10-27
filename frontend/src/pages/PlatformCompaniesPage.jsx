@@ -12,30 +12,28 @@ import { COMPANIES_CHANGED_EVENT } from "../utils/events";
 const TABS = ["pending", "active", "suspended", "rejected", "all"];
 
 const STATUS_STYLES = {
-  pending: "bg-gold-100 text-gold-600 ring-gold-300",
-  active: "bg-leaf-50 text-leaf-700 ring-leaf-500/30",
-  suspended: "bg-red-50 text-red-700 ring-red-300",
+  pending: "bg-amber-50 text-amber-800 ring-amber-200",
+  active: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  suspended: "bg-red-50 text-red-700 ring-red-200",
   rejected: "bg-gray-100 text-gray-500 ring-gray-200"
 };
 
 const PLAN_STYLES = {
   trial: "bg-white text-gray-600 ring-gray-200",
-  starter: "bg-cyan-50 text-cyan-700 ring-cyan-200",
-  growth: "bg-leaf-50 text-leaf-700 ring-leaf-500/30",
-  enterprise: "bg-tea-800 text-white ring-tea-800"
+  starter: "bg-gray-50 text-gray-700 ring-gray-200",
+  growth: "bg-leaf-50 text-leaf-800 ring-leaf-200",
+  enterprise: "bg-gray-900 text-white ring-gray-900"
 };
 
-const pill = "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset";
+const pill = "inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ring-1 ring-inset";
 
 const SummaryTile = ({ icon: Icon, label, value, tone }) => (
-  <div className="glass flex items-center gap-4 rounded-2xl p-4 shadow-lg shadow-tea-900/5">
-    <span className={`flex h-12 w-12 items-center justify-center rounded-full ${tone}`}>
-      <Icon className="h-6 w-6" aria-hidden="true" />
-    </span>
-    <div>
-      <p className="text-2xl font-extrabold text-gray-900">{value}</p>
-      <p className="text-xs font-medium text-gray-500">{label}</p>
-    </div>
+  <div className="panel p-4">
+    <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-gray-500">
+      <Icon className={`h-3.5 w-3.5 ${tone}`} aria-hidden="true" />
+      {label}
+    </p>
+    <p className="mt-1 text-2xl font-semibold tabular-nums text-gray-900">{value}</p>
   </div>
 );
 
@@ -109,7 +107,7 @@ const PlatformCompaniesPage = () => {
         type="button"
         disabled={busyId === company._id}
         onClick={() => (confirmMessage ? setConfirm({ message: confirmMessage, confirmLabel: label, action: run }) : run())}
-        className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold transition disabled:opacity-60 ${classes}`}
+        className={`btn ${classes}`}
       >
         <Icon className="h-4 w-4" aria-hidden="true" />
         {label}
@@ -120,16 +118,16 @@ const PlatformCompaniesPage = () => {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">{t("platform.title")}</h1>
+        <h1 className="text-xl font-semibold text-gray-900">{t("platform.title")}</h1>
         <p className="mt-1 text-sm text-gray-600">{t("platform.subtitle")}</p>
       </div>
 
       {summary && (
         <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <SummaryTile icon={Clock} label={t("platform.summary.pending")} value={summary.companies.pending} tone="bg-gold-100 text-gold-600" />
-          <SummaryTile icon={Building2} label={t("platform.summary.active")} value={summary.companies.active} tone="bg-leaf-50 text-leaf-600" />
-          <SummaryTile icon={Pause} label={t("platform.summary.suspended")} value={summary.companies.suspended} tone="bg-red-50 text-red-600" />
-          <SummaryTile icon={Users} label={t("platform.summary.users")} value={summary.users} tone="bg-cyan-50 text-cyan-600" />
+          <SummaryTile icon={Clock} label={t("platform.summary.pending")} value={summary.companies.pending} tone="text-amber-600" />
+          <SummaryTile icon={Building2} label={t("platform.summary.active")} value={summary.companies.active} tone="text-emerald-600" />
+          <SummaryTile icon={Pause} label={t("platform.summary.suspended")} value={summary.companies.suspended} tone="text-red-600" />
+          <SummaryTile icon={Users} label={t("platform.summary.users")} value={summary.users} tone="text-gray-400" />
         </div>
       )}
 
@@ -139,7 +137,7 @@ const PlatformCompaniesPage = () => {
         </div>
       )}
 
-      <div role="tablist" className="glass mb-5 inline-flex flex-wrap rounded-xl p-1 shadow-sm">
+      <div role="tablist" className="mb-5 flex gap-5 overflow-x-auto border-b border-gray-200">
         {TABS.map((key) => (
           <button
             key={key}
@@ -147,12 +145,10 @@ const PlatformCompaniesPage = () => {
             type="button"
             aria-selected={tab === key}
             onClick={() => setTab(key)}
-            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
-              tab === key ? "bg-leaf-600 text-white shadow-sm" : "text-gray-600 hover:text-gray-900"
-            }`}
+            className={`-mb-px flex items-center gap-2 whitespace-nowrap border-b-2 px-1 pb-2.5 text-sm font-semibold transition-colors ${tab === key ? "border-leaf-700 text-leaf-800" : "border-transparent text-gray-500 hover:text-gray-800"}`}
           >
             {t(`platform.tabs.${key}`)}
-            <span className={`rounded-full px-2 text-xs ${tab === key ? "bg-white/20" : "bg-gray-100"}`}>{counts[key]}</span>
+            <span className={`rounded-full px-2 text-xs ${tab === key ? "bg-leaf-50 text-leaf-800" : "bg-gray-100 text-gray-600"}`}>{counts[key]}</span>
           </button>
         ))}
       </div>
@@ -162,21 +158,21 @@ const PlatformCompaniesPage = () => {
           <LoaderCircle className="h-7 w-7 animate-spin text-leaf-600" aria-label={t("common.loading")} />
         </div>
       ) : visible.length === 0 ? (
-        <div className="glass flex flex-col items-center rounded-2xl px-6 py-14 text-center">
+        <div className="panel flex flex-col items-center rounded-lg px-6 py-14 text-center">
           <Inbox className="h-10 w-10 text-leaf-400" aria-hidden="true" />
           <p className="mt-3 text-sm text-gray-500">{t("platform.empty")}</p>
         </div>
       ) : (
         <ul className="grid gap-4 lg:grid-cols-2">
           {visible.map((company) => (
-            <li key={company._id} className="glass flex flex-col rounded-2xl p-5 shadow-lg shadow-tea-900/5">
+            <li key={company._id} className="panel flex flex-col p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-leaf-50 text-leaf-600">
-                    <Building2 className="h-6 w-6" aria-hidden="true" />
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-gray-100 text-gray-500">
+                    <Building2 className="h-5 w-5" aria-hidden="true" />
                   </span>
                   <div className="min-w-0">
-                    <h2 className="truncate text-lg font-extrabold text-gray-900">{company.name}</h2>
+                    <h2 className="truncate text-base font-semibold text-gray-900">{company.name}</h2>
                     <p className="flex items-center gap-1 text-xs text-gray-500">
                       <MapPin className="h-3 w-3" aria-hidden="true" />
                       {t(`districts.${company.district}`)}
@@ -192,7 +188,7 @@ const PlatformCompaniesPage = () => {
                 </div>
               </div>
 
-              <dl className="mt-4 grid gap-2 rounded-xl bg-white/70 p-3 text-sm text-gray-700 sm:grid-cols-2">
+              <dl className="mt-4 grid gap-2 rounded-md bg-gray-50 p-3 text-sm text-gray-700 sm:grid-cols-2">
                 {company.admin && (
                   <div className="sm:col-span-2">
                     <dt className="text-xs font-semibold uppercase tracking-wide text-gray-400">{t("platform.admin")}</dt>
@@ -217,13 +213,13 @@ const PlatformCompaniesPage = () => {
 
               <div className="mt-4 flex flex-wrap justify-end gap-2">
                 {company.status === "pending" && [
-                  actionButton(company, "reject", X, "border border-clay-500/40 text-clay-600 hover:bg-clay-50", t("platform.reject"), t("platform.confirmReject", { name: company.name })),
-                  actionButton(company, "approve", Check, "bg-gradient-to-r from-leaf-500 to-tea-600 text-white shadow-md shadow-leaf-500/25 hover:from-leaf-600 hover:to-tea-700", t("platform.approve"))
+                  actionButton(company, "reject", X, "btn-danger", t("platform.reject"), t("platform.confirmReject", { name: company.name })),
+                  actionButton(company, "approve", Check, "btn-primary", t("platform.approve"))
                 ]}
                 {company.status === "active" &&
-                  actionButton(company, "suspend", Pause, "text-red-600 hover:bg-red-50", t("platform.suspend"), t("platform.confirmSuspend", { name: company.name }))}
+                  actionButton(company, "suspend", Pause, "btn-danger", t("platform.suspend"), t("platform.confirmSuspend", { name: company.name }))}
                 {company.status === "suspended" &&
-                  actionButton(company, "reactivate", Play, "bg-leaf-600 text-white hover:bg-leaf-700", t("platform.reactivate"))}
+                  actionButton(company, "reactivate", Play, "btn-primary", t("platform.reactivate"))}
               </div>
             </li>
           ))}

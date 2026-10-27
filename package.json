@@ -9,6 +9,7 @@
     "dev:frontend": "npm run dev --prefix frontend",
     "simulate": "npm run simulate --prefix backend",
     "create-platform-admin": "npm run create-platform-admin --prefix backend",
+    "setup-demo": "npm run setup-demo --prefix backend",
     "build": "npm run build --prefix frontend",
     "lint": "npm run lint --prefix frontend"
   }

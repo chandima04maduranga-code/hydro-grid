@@ -1,71 +1,66 @@
 import { useTranslation } from "react-i18next";
-import { CircleAlert, HeartPulse, TriangleAlert, Wifi } from "lucide-react";
-import { healthLevel } from "../../utils/metrics";
+import { CircleAlert, Cpu, TriangleAlert } from "lucide-react";
+import HealthRing from "./HealthRing";
+import { HEALTH_COLORS, healthLevel } from "../../utils/metrics";
 
-const LEVEL_STYLES = {
-  good: { stroke: "#2f9e44", text: "text-leaf-700", label: "telemetry.healthGood" },
-  fair: { stroke: "#c58b2a", text: "text-gold-600", label: "telemetry.healthFair" },
-  poor: { stroke: "#dc2626", text: "text-red-600", label: "telemetry.healthPoor" }
-};
+const LEVEL_LABELS = { good: "telemetry.healthGood", fair: "telemetry.healthFair", poor: "telemetry.healthPoor" };
 
-const RADIUS = 52;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+const Tile = ({ tint, icon: Icon, iconStyle, label, children }) => (
+  <div className={`flex items-center gap-3 rounded-lg p-4 ring-1 ${tint}`}>
+    {Icon && (
+      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${iconStyle}`}>
+        <Icon className="h-5 w-5" aria-hidden="true" />
+      </span>
+    )}
+    <div className="min-w-0">
+      <p className="text-xs font-medium text-gray-600">{label}</p>
+      <div className="mt-0.5 flex items-baseline gap-1.5">{children}</div>
+    </div>
+  </div>
+);
 
-// Farm-wide health: average node score as a ring, plus issue and node counts
+// KPI strip: farm health score, problem counts and nodes online
 const HealthSummary = ({ nodes }) => {
   const { t } = useTranslation();
-  const scored = nodes.filter((node) => node.online);
-  const score = scored.length
-    ? Math.round(scored.reduce((sum, node) => sum + node.assessment.healthScore, 0) / scored.length)
+  const online = nodes.filter((node) => node.online);
+  const score = online.length
+    ? Math.round(online.reduce((sum, node) => sum + node.assessment.healthScore, 0) / online.length)
     : 0;
-  const issues = scored.flatMap((node) => node.assessment.issues);
+  const issues = online.flatMap((node) => node.assessment.issues);
   const critical = issues.filter((issue) => issue.severity === "critical").length;
   const warnings = issues.length - critical;
-  const level = LEVEL_STYLES[healthLevel(score)];
+  const level = healthLevel(score);
 
   return (
-    <section className="glass flex h-full flex-col rounded-3xl p-6 shadow-xl shadow-tea-900/10">
-      <h2 className="flex items-center gap-2 text-lg font-extrabold text-gray-900">
-        <HeartPulse className="h-5 w-5 text-leaf-600" aria-hidden="true" />
-        {t("telemetry.healthTitle")}
-      </h2>
-
-      <div className="mt-4 flex items-center gap-6">
-        <div className="relative h-32 w-32 shrink-0" role="img" aria-label={`${t("telemetry.healthScore")}: ${score} / 100`}>
-          <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-            <circle cx="60" cy="60" r={RADIUS} fill="none" stroke="#e5e7eb" strokeWidth="12" />
-            <circle
-              cx="60" cy="60" r={RADIUS} fill="none" stroke={level.stroke} strokeWidth="12" strokeLinecap="round"
-              strokeDasharray={CIRCUMFERENCE} strokeDashoffset={CIRCUMFERENCE * (1 - score / 100)}
-              className="transition-[stroke-dashoffset] duration-700"
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className={`text-3xl font-extrabold ${level.text}`}>{score}</span>
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">/ 100</span>
-          </div>
-        </div>
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className={`flex items-center gap-3 rounded-lg p-4 ring-1 ${HEALTH_COLORS[level].tint}`}>
+        <HealthRing score={score} size={48} />
         <div>
-          <p className={`text-xl font-extrabold ${level.text}`}>{t(level.label)}</p>
-          <p className="text-xs text-gray-500">{t("telemetry.healthScore")}</p>
+          <p className="text-xs font-medium text-gray-600">{t("telemetry.healthScore")}</p>
+          <p className={`text-sm font-semibold ${HEALTH_COLORS[level].text}`}>{t(LEVEL_LABELS[level])}</p>
         </div>
       </div>
-
-      <ul className="mt-6 space-y-2 text-sm">
-        <li className="flex items-center gap-2 font-semibold text-red-600">
-          <CircleAlert className="h-4 w-4" aria-hidden="true" />
-          {t("telemetry.criticalCount", { count: critical })}
-        </li>
-        <li className="flex items-center gap-2 font-semibold text-gold-600">
-          <TriangleAlert className="h-4 w-4" aria-hidden="true" />
-          {t("telemetry.warningCount", { count: warnings })}
-        </li>
-        <li className="flex items-center gap-2 text-gray-600">
-          <Wifi className="h-4 w-4 text-leaf-600" aria-hidden="true" />
-          {t("telemetry.nodesOnline", { online: scored.length, total: nodes.length })}
-        </li>
-      </ul>
-    </section>
+      <Tile
+        tint={critical ? "bg-red-50 ring-red-100" : "bg-white ring-gray-200"}
+        icon={CircleAlert}
+        iconStyle={critical ? "bg-red-600 text-white" : "bg-gray-100 text-gray-400"}
+        label={t("severity.critical")}
+      >
+        <span className={`text-2xl font-bold tabular-nums ${critical ? "text-red-700" : "text-gray-900"}`}>{critical}</span>
+      </Tile>
+      <Tile
+        tint={warnings ? "bg-amber-50 ring-amber-100" : "bg-white ring-gray-200"}
+        icon={TriangleAlert}
+        iconStyle={warnings ? "bg-amber-500 text-white" : "bg-gray-100 text-gray-400"}
+        label={t("severity.warning")}
+      >
+        <span className={`text-2xl font-bold tabular-nums ${warnings ? "text-amber-700" : "text-gray-900"}`}>{warnings}</span>
+      </Tile>
+      <Tile tint="bg-sky-50 ring-sky-100" icon={Cpu} iconStyle="bg-sky-600 text-white" label={t("telemetry.nodes")}>
+        <span className="text-2xl font-bold tabular-nums text-gray-900">{online.length}</span>
+        <span className="text-sm text-gray-500">/ {nodes.length} {t("telemetry.online").toLowerCase()}</span>
+      </Tile>
+    </div>
   );
 };
 

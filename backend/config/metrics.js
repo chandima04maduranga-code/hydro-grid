@@ -11,6 +11,8 @@ const METRICS = {
   ec: { unit: 'mS/cm', group: 'water', optimal: [1.0, 1.6], margin: 0.5 },
   dissolvedOxygen: { unit: 'mg/L', group: 'water', optimal: [6, null], margin: 2 },
   waterLevel: { unit: '%', group: 'water', optimal: [40, null], margin: 20 },
+  // Circulation pump flow through NFT channels / drip lines
+  flowRate: { unit: 'L/min', group: 'water', optimal: [1.5, 4], margin: [1, 3] },
 
   // Greenhouse climate
   airTemp: { unit: '°C', group: 'climate', optimal: [18, 28], margin: 6 },

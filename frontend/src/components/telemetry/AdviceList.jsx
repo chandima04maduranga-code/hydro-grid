@@ -1,95 +1,130 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import { ChevronDown, CircleAlert, CircleCheck, TriangleAlert } from "lucide-react";
+import { CircleCheck, Clock, Wrench, WifiOff } from "lucide-react";
 import { METRIC_META, formatMetricValue, formatRange } from "../../utils/metrics";
+import { formatDateTime } from "../../utils/format";
+
+const VISIBLE_COUNT = 4;
 
 const SEVERITY_STYLES = {
-  critical: { card: "border-red-300 bg-red-50/70", badge: "bg-red-600 text-white", icon: CircleAlert, iconColor: "text-red-600" },
-  warning: { card: "border-gold-300 bg-gold-100/50", badge: "bg-gold-500 text-white", icon: TriangleAlert, iconColor: "text-gold-600" }
+  critical: { card: "bg-red-50 ring-red-200", icon: "bg-red-600 text-white", label: "bg-red-600 text-white", step: "bg-red-600 text-white" },
+  warning: { card: "bg-amber-50 ring-amber-200", icon: "bg-amber-500 text-white", label: "bg-amber-500 text-white", step: "bg-amber-500 text-white" }
 };
 
-// One problem with plain-language explanation and numbered steps to fix it
+// A node that stopped reporting is a problem the farmer has to fix as well
+const offlineIssue = { code: "node.offline", severity: "warning" };
+
+// One problem: what is wrong, how urgent it is, why it matters and numbered steps to fix it
 export const AdviceCard = ({ issue, node, showNode = true }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const style = SEVERITY_STYLES[issue.severity];
-  const SeverityIcon = style.icon;
-  const MetricIcon = METRIC_META[issue.metric]?.icon;
   const steps = t(`advice.${issue.code}.steps`, { returnObjects: true });
+  const Icon = issue.metric ? METRIC_META[issue.metric].icon : WifiOff;
 
   return (
-    <details open={issue.severity === "critical"} className={`group rounded-2xl border p-4 ${style.card}`}>
-      <summary className="flex cursor-pointer list-none items-start gap-3">
-        <SeverityIcon className={`mt-0.5 h-5 w-5 shrink-0 ${style.iconColor}`} aria-hidden="true" />
+    <article className={`rounded-lg p-4 ring-1 ${style.card}`}>
+      <div className="flex items-start gap-3">
+        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${style.icon}`}>
+          <Icon className="h-5 w-5" aria-hidden="true" />
+        </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${style.badge}`}>
-              {t(`severity.${issue.severity}`)}
+            <span className={`rounded px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ${style.label}`}>{t(`severity.${issue.severity}`)}</span>
+            <span className="flex items-center gap-1 text-xs font-medium text-gray-700">
+              <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+              {t(`telemetry.urgency.${issue.severity}`)}
             </span>
-            <h3 className="font-bold text-gray-900">{t(`advice.${issue.code}.title`)}</h3>
           </div>
-          <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600">
-            {MetricIcon && <MetricIcon className="h-3.5 w-3.5" aria-hidden="true" />}
-            <span>
-              {t(`metrics.${issue.metric}`)}: <strong className="text-gray-900">{formatMetricValue(issue.metric, issue.value)} {issue.unit}</strong>
-            </span>
-            <span>{t("telemetry.target", { range: formatRange(t, issue.metric, issue.optimal, issue.unit) })}</span>
+          <h3 className="mt-1 font-semibold text-gray-900">{t(`advice.${issue.code}.title`)}</h3>
+          <p className="mt-0.5 flex flex-wrap gap-x-3 text-xs text-gray-600">
+            {issue.metric ? (
+              <>
+                <span>
+                  {t(`metrics.${issue.metric}`)}{" "}
+                  <strong className="font-bold tabular-nums text-gray-900">{formatMetricValue(issue.metric, issue.value)} {issue.unit}</strong>
+                </span>
+                <span>{t("telemetry.target", { range: formatRange(t, issue.metric, issue.optimal, issue.unit) })}</span>
+              </>
+            ) : (
+              node?.lastSeenAt && <span>{t("telemetry.lastSeen", { time: formatDateTime(node.lastSeenAt, i18n.language) })}</span>
+            )}
             {showNode && node && (
               <Link to={`/nodes/${encodeURIComponent(node.nodeId)}`} className="font-semibold text-leaf-700 hover:underline">
-                {node.name} · {t(`crops.${node.cropProfile}`)}
+                {node.name}
               </Link>
             )}
           </p>
         </div>
-        <ChevronDown className="mt-1 h-4 w-4 shrink-0 text-gray-400 transition group-open:rotate-180" aria-hidden="true" />
-      </summary>
-
-      <div className="mt-3 grid gap-3 pl-8 text-sm sm:grid-cols-2">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-gray-500">{t("telemetry.whyItMatters")}</p>
-          <p className="mt-1 text-gray-700">{t(`advice.${issue.code}.why`)}</p>
-        </div>
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-gray-500">{t("telemetry.whatToDo")}</p>
-          <ol className="mt-1 list-decimal space-y-1 pl-4 text-gray-800">
-            {Array.isArray(steps) && steps.map((step) => <li key={step}>{step}</li>)}
-          </ol>
-        </div>
       </div>
-    </details>
+
+      <p className="mt-3 text-sm text-gray-700">{t(`advice.${issue.code}.why`)}</p>
+
+      <div className="mt-3 rounded-md bg-white p-3 ring-1 ring-black/5">
+        <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <Wrench className="h-3.5 w-3.5" aria-hidden="true" />
+          {t("telemetry.whatToDo")}
+        </p>
+        <ol className="mt-2 space-y-2">
+          {Array.isArray(steps) && steps.map((step, index) => (
+            <li key={step} className="flex gap-2.5 text-sm text-gray-800">
+              <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${style.step}`}>{index + 1}</span>
+              <span>{step}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </article>
   );
 };
 
-// "Action needed": every problem across the farm, most urgent first
+// Every problem across the given nodes with its fix, most urgent first
 const AdviceList = ({ nodes }) => {
   const { t } = useTranslation();
+  const [showAll, setShowAll] = useState(false);
+
   const items = nodes
-    .filter((node) => node.online)
-    .flatMap((node) => node.assessment.issues.map((issue) => ({ issue, node })))
+    .flatMap((node) => (node.online
+      ? node.assessment.issues.map((issue) => ({ issue, node }))
+      : [{ issue: offlineIssue, node }]))
     .sort((a, b) => (a.issue.severity === b.issue.severity ? 0 : a.issue.severity === "critical" ? -1 : 1));
+  const visible = showAll ? items : items.slice(0, VISIBLE_COUNT);
 
   return (
-    <section className="glass flex h-full flex-col rounded-3xl p-6 shadow-xl shadow-tea-900/10">
-      <h2 className="flex items-center gap-2 text-lg font-extrabold text-gray-900">
-        <TriangleAlert className="h-5 w-5 text-gold-600" aria-hidden="true" />
-        {t("telemetry.actionNeeded")}
-        {items.length > 0 && (
-          <span className="rounded-full bg-red-600 px-2 py-0.5 text-xs font-bold text-white">{items.length}</span>
-        )}
-      </h2>
+    <section className="panel h-full p-4">
+      <header className="mb-3 flex items-center justify-between gap-3">
+        <h2 className="flex items-center gap-2 font-semibold text-gray-900">
+          <Wrench className="h-4 w-4 text-leaf-700" aria-hidden="true" />
+          {t("telemetry.problemsAndFixes")}
+        </h2>
+        {items.length > 0 && <span className="rounded-full bg-gray-900 px-2 py-0.5 text-xs font-semibold tabular-nums text-white">{items.length}</span>}
+      </header>
 
       {items.length === 0 ? (
-        <div className="mt-4 flex flex-1 items-center gap-3 rounded-2xl bg-leaf-50/80 p-5 text-sm text-leaf-700">
-          <CircleCheck className="h-6 w-6 shrink-0" aria-hidden="true" />
-          {t("telemetry.allGood")}
+        <div className="flex items-center gap-3 rounded-lg bg-emerald-50 p-4 ring-1 ring-emerald-100">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white">
+            <CircleCheck className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <div>
+            <p className="font-semibold text-emerald-900">{t("telemetry.allGoodTitle")}</p>
+            <p className="text-sm text-emerald-800">{t("telemetry.allGood")}</p>
+          </div>
         </div>
       ) : (
-        <ul className="mt-4 max-h-[28rem] space-y-3 overflow-y-auto pr-1">
-          {items.map(({ issue, node }) => (
-            <li key={`${node.nodeId}-${issue.code}`}>
-              <AdviceCard issue={issue} node={node} />
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className="grid gap-3 xl:grid-cols-2">
+            {visible.map(({ issue, node }) => (
+              <li key={`${node.nodeId}-${issue.code}`}>
+                <AdviceCard issue={issue} node={node} />
+              </li>
+            ))}
+          </ul>
+          {items.length > VISIBLE_COUNT && (
+            <button type="button" onClick={() => setShowAll((current) => !current)} className="btn btn-secondary mt-3 w-full">
+              {showAll ? t("telemetry.showLess") : t("telemetry.showAll", { count: items.length })}
+            </button>
+          )}
+        </>
       )}
     </section>
   );

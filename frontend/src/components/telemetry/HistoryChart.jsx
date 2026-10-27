@@ -4,7 +4,7 @@ import { Area, AreaChart, CartesianGrid, ReferenceArea, ResponsiveContainer, Too
 import { METRIC_META, formatMetricValue } from "../../utils/metrics";
 import { SL_TIME_ZONE } from "../../utils/format";
 
-const TONE_COLORS = { good: "#2f9e44", warning: "#c58b2a", critical: "#dc2626", muted: "#9ca3af" };
+const TONE_COLORS = { good: "#15803d", warning: "#b45309", critical: "#b91c1c", muted: "#9ca3af" };
 
 const timeFormatter = (hours) => {
   const format = new Intl.DateTimeFormat("en-LK", {
@@ -25,10 +25,10 @@ const HistoryChart = ({ metric, points, optimal, unit, tone, hours }) => {
   const formatTime = timeFormatter(hours);
 
   return (
-    <div className="glass rounded-2xl p-4 shadow-lg shadow-tea-900/5">
+    <div className="panel p-4">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <p className="flex items-center gap-2 text-sm font-bold text-gray-800">
-          <Icon className="h-4 w-4" style={{ color }} aria-hidden="true" />
+        <p className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+          <Icon className="h-4 w-4 text-gray-400" aria-hidden="true" />
           {t(`metrics.${metric}`)}
         </p>
         <span className="text-xs text-gray-500">{unit}</span>
@@ -41,7 +41,7 @@ const HistoryChart = ({ metric, points, optimal, unit, tone, hours }) => {
             <AreaChart data={data} margin={{ top: 6, right: 6, bottom: 0, left: -18 }}>
               <defs>
                 <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+                  <stop offset="0%" stopColor={color} stopOpacity={0.15} />
                   <stop offset="100%" stopColor={color} stopOpacity={0.02} />
                 </linearGradient>
               </defs>
@@ -63,9 +63,9 @@ const HistoryChart = ({ metric, points, optimal, unit, tone, hours }) => {
               <Tooltip
                 labelFormatter={formatTime}
                 formatter={(value) => [`${formatMetricValue(metric, value)} ${unit}`, t(`metrics.${metric}`)]}
-                contentStyle={{ borderRadius: 12, border: "1px solid #e5e7eb", fontSize: 12 }}
+                contentStyle={{ borderRadius: 6, border: "1px solid #e5e7eb", fontSize: 12 }}
               />
-              <Area type="monotone" dataKey="value" stroke={color} strokeWidth={2} fill={`url(#${gradientId})`} isAnimationActive={false} />
+              <Area type="monotone" dataKey="value" stroke={color} strokeWidth={1.5} fill={`url(#${gradientId})`} isAnimationActive={false} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

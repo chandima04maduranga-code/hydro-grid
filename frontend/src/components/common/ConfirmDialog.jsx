@@ -21,11 +21,11 @@ const ConfirmDialog = ({ open, message, confirmLabel, onConfirm, onCancel }) => 
         event.preventDefault();
         onCancel();
       }}
-      className="m-auto w-[min(92vw,26rem)] rounded-2xl border border-gray-100 p-0 shadow-2xl backdrop:bg-tea-900/40 backdrop:backdrop-blur-sm"
+      className="m-auto w-[min(92vw,26rem)] rounded-lg border border-gray-200 p-0 shadow-md backdrop:bg-gray-900/40"
     >
       <div className="p-6">
         <div className="flex items-start gap-3">
-          <span className="rounded-full bg-clay-50 p-2 text-clay-600">
+          <span className="rounded-full bg-red-50 p-2 text-red-600">
             <TriangleAlert className="h-5 w-5" aria-hidden="true" />
           </span>
           <p className="pt-1 text-sm leading-relaxed text-gray-700">{message}</p>
@@ -34,14 +34,14 @@ const ConfirmDialog = ({ open, message, confirmLabel, onConfirm, onCancel }) => 
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-xl bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
+            className="btn btn-secondary"
           >
             {t("common.cancel")}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="rounded-xl bg-clay-500 px-4 py-2 text-sm font-semibold text-white hover:bg-clay-600"
+            className="btn bg-red-600 text-white hover:bg-red-700"
           >
             {confirmLabel}
           </button>

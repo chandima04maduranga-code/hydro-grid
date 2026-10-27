@@ -15,6 +15,8 @@ Designed for Sri Lanka: the interface is available in **English and Sinhala**, s
 - **Company roles** – Admin, Farm Manager, Field Officer
 - **English / Sinhala** – switch any time; each user's preferred language is remembered
 - **Live dashboard** – crop systems and IoT telemetry refreshed every few seconds, with the signed-in company shown in the header
+- **Greenhouses with district codes** – each greenhouse gets a permanent code from its district and number, e.g. **Nuwara Eliya GH-01**, **Badulla GH-01**, plus a plain name, growing system (NFT, deep water culture, grow bags, ebb and flow, vertical towers), main crop, area and status; removed greenhouses are archived so codes are never reused
+- **Staff per greenhouse** – company admins see everything; farm managers and field officers only see the greenhouses (and their sensors) assigned to them
 - **Ten hydroponic sensors per node** – water temperature, pH, EC (nutrients), dissolved oxygen, reservoir level, air temperature, humidity, light, CO₂ and grow-bag moisture
 - **Farmer advice** – every reading is judged against crop-specific targets; problems appear in an "Action needed" list with why it matters and numbered steps to fix it (e.g. "Reservoir is running low → top up with clean water, check for leaks, re-check pH and EC"), in English and Sinhala
 - **Farm health score and history charts** – a 0–100 health score per node and farm, and 6-hour / 24-hour / 7-day charts with the target band shaded
@@ -110,7 +112,13 @@ Hydro_Grid/
    - Frontend: http://localhost:5173
    - API: http://localhost:5000/api (health check: `/api/health`)
 
-5. **Register a company** on the login page (**Register your company**), then approve it as the platform admin.
+5. **Add companies**: register one on the login page (**Register your company**) and approve it as the platform admin, or build the full demo from `backend/scripts/demo-data.json`:
+
+   ```bash
+   npm run setup-demo
+   ```
+
+   This creates Agri Lanka (Pvt) Ltd and Green Farmers (Pvt) Ltd (already approved) with role-based demo staff (`admin@agrilanka.test`, `manager@agrilanka.test`, `officer1@agrilanka.test`, … `officer@greenfarmers.test`), greenhouses with assigned staff, one sensor node per greenhouse with 24 hours of readings, and crop records. All demo accounts share the password in `DEMO_PASSWORD` (backend/.env), or the one you type when asked. It prints the simulator command for each company.
 
 6. **Start virtual IoT nodes** for a company (optional, third terminal)
 
@@ -146,13 +154,20 @@ Authenticated requests send `Authorization: Bearer <token>`. Errors return a mac
 | PATCH  | `/api/users/:id/approve`                   | Company admin  | Approve a pending account with a role              |
 | PATCH  | `/api/users/:id/reject`                    | Company admin  | Reject a pending account                           |
 | PATCH  | `/api/users/:id`                           | Company admin  | Change role, disable or re-enable                  |
+| GET    | `/api/greenhouses/options`                 | Company user   | Districts, systems, next code per district, plan usage |
+| GET    | `/api/greenhouses`                         | Company user   | Visible greenhouses with sensor and health summary |
+| POST   | `/api/greenhouses`                         | Company admin  | Add a greenhouse (code assigned automatically)     |
+| GET    | `/api/greenhouses/:id`                     | Company user   | Greenhouse with staff, nodes and advice            |
+| PATCH  | `/api/greenhouses/:id`                     | Admin, manager | Edit name, system, crop, area, status, notes       |
+| PUT    | `/api/greenhouses/:id/staff`               | Company admin  | Assign farm managers and field officers            |
+| DELETE | `/api/greenhouses/:id`                     | Company admin  | Archive a greenhouse without sensor nodes          |
 | GET    | `/api/plants`                              | Company user   | List the company's crop systems                    |
 | POST   | `/api/plants`                              | Admin, manager | Create a crop system                               |
 | POST   | `/api/telemetry`                           | Devices        | Ingest a batch of readings from one node           |
 | GET    | `/api/telemetry/options`                   | Company user   | Metric units and crop target bands                 |
-| GET    | `/api/telemetry/nodes`                     | Company user   | Nodes with latest readings, advice and health      |
+| GET    | `/api/telemetry/nodes?greenhouse=`         | Company user   | Visible nodes with readings, advice and health     |
 | GET    | `/api/telemetry/nodes/:nodeId/history`     | Company user   | Averaged history for charts (`?hours=6/24/168`)    |
-| PATCH  | `/api/telemetry/nodes/:nodeId`             | Admin, manager | Set node name, location and crop profile           |
+| PATCH  | `/api/telemetry/nodes/:nodeId`             | Admin, manager | Set node name, location, crop profile, greenhouse  |
 | GET    | `/api/platform/summary`                    | Platform admin | Companies by status and plan, user total           |
 | GET    | `/api/platform/companies?status=`          | Platform admin | Companies with admin contact and staff count       |
 | PATCH  | `/api/platform/companies/:id/approve`      | Platform admin | Activate a company (starts a trial)                |
@@ -175,7 +190,7 @@ Authenticated requests send `Authorization: Bearer <token>`. Errors return a mac
 - [x] Photo-based UI redesign
 - [x] Multi-company workspaces, plans and platform admin
 - [ ] Subscription payments (PayHere sandbox), trial expiry and plan limits
-- [ ] Greenhouse management (e.g. "Nuwara Eliya GH-01")
+- [x] Greenhouse management (e.g. "Nuwara Eliya GH-01") with staff assignment
 - [ ] Plant management (full CRUD with validation)
 - [x] Multi-sensor IoT telemetry with farmer advice, health score and history charts
 - [ ] Security hardening (device API keys, rate limiting)

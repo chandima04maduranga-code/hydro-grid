@@ -53,16 +53,15 @@
     "remember": "Keep me logged in",
     "submit": "Log in",
     "submitting": "Logging in…",
-    "or": "or",
     "noAccount": "New to Hydro_Grid?",
     "register": "Request access",
-    "secureTitle": "Secure access",
     "secureText": "Every account is approved by your farm administrator.",
     "company": "Company",
     "chooseCompany": "Choose your company",
     "platformOption": "Hydro_Grid platform (administrators)",
     "registerCompany": "Register your company",
-    "newCompany": "Running a farming company?"
+    "newCompany": "Running a farming company?",
+    "noCompanies": "No companies are registered yet. Use “Register your company” below."
   },
   "register": {
     "title": "Request access",
@@ -105,7 +104,14 @@
     "COMPANY_INACTIVE": "Your company is no longer active.",
     "COMPANY_NOT_FOUND": "Choose an active company.",
     "COMPANY_NAME_TAKEN": "A company with this name is already registered.",
-    "INVALID_COMPANY_STATUS": "This action is not possible for the company right now."
+    "INVALID_COMPANY_STATUS": "This action is not possible for the company right now.",
+    "PLAN_LIMIT_GREENHOUSES": "Your plan's greenhouse limit is reached. Upgrade the plan to add more.",
+    "PLAN_LIMIT_NODES": "Your plan's sensor node limit is reached.",
+    "GREENHOUSE_NOT_FOUND": "Greenhouse not found.",
+    "GREENHOUSE_HAS_NODES": "Move or remove this greenhouse's sensor nodes first.",
+    "INVALID_STAFF": "Only active farm managers and field officers of your company can be assigned.",
+    "NODE_NOT_FOUND": "Sensor node not found.",
+    "TRY_AGAIN": "Please try again."
   },
   "fields": {
     "REQUIRED": "This field is required",
@@ -113,7 +119,9 @@
     "INVALID_PHONE": "Enter a Sri Lankan mobile number (07X XXX XXXX)",
     "WEAK_PASSWORD": "Use at least 8 characters, with letters and numbers",
     "MISMATCH": "Passwords do not match",
-    "REQUIRED_COMPANY": "Choose your company"
+    "REQUIRED_COMPANY": "Choose your company",
+    "INVALID_AREA": "Enter an area between 1 and 1,000,000 m²",
+    "TOO_LONG": "This is too long"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -123,7 +131,8 @@
     "controlPanel": "Control panel",
     "pendingApprovals": "{{count}} pending approvals",
     "companies": "Companies",
-    "platform": "Hydro_Grid platform"
+    "platform": "Hydro_Grid platform",
+    "greenhouses": "Greenhouses"
   },
   "users": {
     "title": "User management",
@@ -172,7 +181,12 @@
     "cropType": "Crop type",
     "systemId": "System ID",
     "growthStage": "Growth stage",
-    "updated": "Updated {{time}}"
+    "updated": "Updated {{time}}",
+    "period": {
+      "morning": "Good morning, {{name}}",
+      "afternoon": "Good afternoon, {{name}}",
+      "evening": "Good evening, {{name}}"
+    }
   },
   "notFound": {
     "title": "Page not found",
@@ -287,6 +301,7 @@
     "ec": "Nutrients (EC)",
     "dissolvedOxygen": "Dissolved oxygen",
     "waterLevel": "Reservoir level",
+    "flowRate": "Water flow",
     "airTemp": "Air temperature",
     "humidity": "Humidity",
     "light": "Light",
@@ -356,7 +371,16 @@
     "last7Days": "Last 7 days",
     "notFound": "Sensor node not found.",
     "targetBand": "Target band",
-    "noAccess": "Only admins and farm managers can change node settings."
+    "noAccess": "Only admins and farm managers can change node settings.",
+    "urgency": {
+      "critical": "Act within 1 hour",
+      "warning": "Fix today"
+    },
+    "problemsAndFixes": "Problems and how to fix them",
+    "showAll": "Show all ({{count}})",
+    "showLess": "Show less",
+    "allGoodTitle": "Everything looks good",
+    "reservoir": "Reservoir"
   },
   "advice": {
     "waterTemp.high": {
@@ -504,6 +528,7 @@
       "title": "Grow bags are drying out",
       "why": "Dry roots stop taking up water and nutrients, and plants wilt.",
       "steps": [
+        "Look at the water flow reading. A stopped pump is the most common cause.",
         "Run an irrigation cycle now.",
         "Check drippers for blockages.",
         "Water more often in hot weather."
@@ -517,6 +542,103 @@
         "Check that drainage holes are not blocked.",
         "Shorten the irrigation time."
       ]
+    },
+    "flowRate.low": {
+      "title": "Water flow has stopped or is weak",
+      "why": "In NFT channels and drip lines, roots dry out within an hour when the water stops flowing.",
+      "steps": [
+        "Check that the circulation pump has power (plug, switch and fuse).",
+        "Clean the pump filter and inlet. Algae and roots often block it.",
+        "Flush blocked channels and drippers, and straighten kinked pipes.",
+        "If the pump is broken, water the grow bags by hand until it is replaced."
+      ]
+    },
+    "flowRate.high": {
+      "title": "Water flow is too strong",
+      "why": "Fast flow floods the channels, washes roots loose and can overflow the reservoir.",
+      "steps": [
+        "Partly close the valve after the pump.",
+        "Check that the return pipe to the reservoir is not blocked.",
+        "Aim for 1.5 to 4 litres per minute per channel."
+      ]
+    },
+    "node.offline": {
+      "title": "Sensor node is not sending data",
+      "why": "Without readings you cannot see problems such as an empty reservoir or a stopped pump.",
+      "steps": [
+        "Check the node's power adapter or battery.",
+        "Check that the Wi-Fi router is on and close enough to the node.",
+        "Restart the node: unplug it for 10 seconds, then plug it back in.",
+        "Until it is back, check pH, EC and the water level by hand."
+      ]
     }
+  },
+  "systemTypes": {
+    "nft": "NFT channels",
+    "dwc": "Deep water culture",
+    "growBag": "Grow bags / drip",
+    "ebbFlow": "Ebb and flow",
+    "vertical": "Vertical towers"
+  },
+  "greenhouseStatuses": {
+    "active": "Active",
+    "maintenance": "Under maintenance",
+    "inactive": "Inactive"
+  },
+  "greenhouses": {
+    "title": "Greenhouses",
+    "subtitle": "Your greenhouses by district, with their sensors and staff.",
+    "add": "Add greenhouse",
+    "addTitle": "Add a greenhouse",
+    "nextCode": "It will be registered as {{code}}",
+    "district": "District",
+    "chooseDistrict": "Choose a district",
+    "name": "Greenhouse name",
+    "namePlaceholder": "e.g. Leafy Greens House",
+    "system": "Growing system",
+    "mainCrop": "Main crop",
+    "noMainCrop": "Not set",
+    "area": "Area (m²)",
+    "areaValue": "{{area}} m²",
+    "status": "Status",
+    "notes": "Notes",
+    "create": "Add greenhouse",
+    "creating": "Adding…",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "empty": "No greenhouses yet.",
+    "emptyAdmin": "Add your first greenhouse to start placing sensor nodes and assigning staff.",
+    "emptyStaff": "You are not assigned to any greenhouse yet. Ask your company admin.",
+    "planUsage": "{{used}} of {{limit}} greenhouses on your plan",
+    "planUnlimited": "{{used}} greenhouses · unlimited plan",
+    "planFull": "Plan limit reached",
+    "nodes": "{{count}} sensor nodes",
+    "nodes_one": "{{count}} sensor node",
+    "online": "{{count}} online",
+    "noNodes": "No sensor nodes placed yet.",
+    "health": "Health",
+    "noHealth": "No live data",
+    "staff": "Staff",
+    "noStaff": "No staff assigned yet.",
+    "assignStaff": "Assign staff",
+    "saveStaff": "Save staff",
+    "staffSaved": "Staff updated",
+    "staffHint": "Admins see every greenhouse. Farm managers and field officers only see the greenhouses assigned to them.",
+    "noAssignable": "No active farm managers or field officers yet. Approve staff on the Users page first.",
+    "created": "{{code}} added",
+    "updated": "Greenhouse saved",
+    "archive": "Remove greenhouse",
+    "archived": "{{code}} removed",
+    "confirmArchive": "Remove {{code}}? It will be archived and its code will never be reused.",
+    "details": "Details",
+    "edit": "Edit details",
+    "back": "Back to greenhouses",
+    "allGreenhouses": "All greenhouses",
+    "unplaced": "Not placed",
+    "placeIn": "Greenhouse",
+    "chooseGreenhouse": "Not placed in a greenhouse",
+    "sensors": "Sensors in this greenhouse",
+    "advice": "Advice for this greenhouse"
   }
 }
