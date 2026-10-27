@@ -1,20 +1,20 @@
 import { useTranslation } from "react-i18next";
 
 const STATUS_STYLES = {
-  active: "bg-tea-50 text-tea-700 ring-tea-200",
-  pending: "bg-gold-100 text-gold-600 ring-gold-300",
-  rejected: "bg-clay-50 text-clay-600 ring-clay-500/30",
+  active: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  pending: "bg-amber-50 text-amber-800 ring-amber-200",
+  rejected: "bg-red-50 text-red-700 ring-red-200",
   disabled: "bg-gray-100 text-gray-500 ring-gray-200"
 };
 
 const ROLE_STYLES = {
-  platform_admin: "bg-gold-500 text-white ring-gold-500",
-  admin: "bg-tea-800 text-white ring-tea-800",
-  farm_manager: "bg-gold-100 text-gold-600 ring-gold-300",
-  field_officer: "bg-white text-tea-700 ring-tea-200"
+  platform_admin: "bg-gray-900 text-white ring-gray-900",
+  admin: "bg-leaf-50 text-leaf-800 ring-leaf-200",
+  farm_manager: "bg-sky-50 text-sky-800 ring-sky-200",
+  field_officer: "bg-gray-50 text-gray-700 ring-gray-200"
 };
 
-const badgeClasses = "inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset";
+const badgeClasses = "inline-flex items-center whitespace-nowrap rounded px-2 py-0.5 text-xs font-medium ring-1 ring-inset";
 
 export const StatusBadge = ({ status }) => {
   const { t } = useTranslation();

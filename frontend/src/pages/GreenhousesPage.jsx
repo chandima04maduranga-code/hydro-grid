@@ -54,12 +54,12 @@ const GreenhousesPage = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">{t("greenhouses.title")}</h1>
+          <h1 className="text-xl font-semibold text-gray-900">{t("greenhouses.title")}</h1>
           <p className="mt-1 text-sm text-gray-600">{t("greenhouses.subtitle")}</p>
         </div>
         {isAdmin && options && (
           <div className="flex flex-wrap items-center gap-3">
-            <span className={`rounded-full px-3 py-1.5 text-xs font-semibold ${atLimit ? "bg-gold-100 text-gold-600" : "glass text-gray-600"}`}>
+            <span className={`rounded-full px-3 py-1.5 text-xs font-semibold ${atLimit ? "bg-amber-50 text-amber-800 ring-1 ring-amber-200" : "bg-white text-gray-600 ring-1 ring-gray-200"}`}>
               {options.limit === null
                 ? t("greenhouses.planUnlimited", { used: options.used })
                 : t("greenhouses.planUsage", { used: options.used, limit: options.limit })}
@@ -69,7 +69,7 @@ const GreenhousesPage = () => {
               onClick={() => setAdding(true)}
               disabled={atLimit || adding}
               title={atLimit ? t("greenhouses.planFull") : undefined}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-leaf-500 to-tea-600 px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-leaf-500/25 hover:from-leaf-600 hover:to-tea-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn btn-primary"
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
               {t("greenhouses.add")}
@@ -81,8 +81,8 @@ const GreenhousesPage = () => {
       {notice && <Alert tone={notice.tone}>{notice.text}</Alert>}
 
       {adding && options && (
-        <section className="glass rounded-3xl p-6 shadow-xl shadow-tea-900/10">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-extrabold text-gray-900">
+        <section className="panel rounded-lg p-6">
+          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900">
             <Warehouse className="h-5 w-5 text-leaf-600" aria-hidden="true" />
             {t("greenhouses.addTitle")}
           </h2>
@@ -95,7 +95,7 @@ const GreenhousesPage = () => {
           <LoaderCircle className="h-8 w-8 animate-spin text-leaf-600" aria-label={t("common.loading")} />
         </div>
       ) : greenhouses.length === 0 ? (
-        <div className="glass flex flex-col items-center rounded-3xl px-6 py-14 text-center">
+        <div className="panel flex flex-col items-center rounded-lg px-6 py-14 text-center">
           <Warehouse className="h-12 w-12 text-leaf-400" aria-hidden="true" />
           <p className="mt-3 font-semibold text-gray-800">{t("greenhouses.empty")}</p>
           <p className="mt-1 max-w-md text-sm text-gray-500">{isAdmin ? t("greenhouses.emptyAdmin") : t("greenhouses.emptyStaff")}</p>
@@ -103,11 +103,11 @@ const GreenhousesPage = () => {
       ) : (
         districts.map((district) => (
           <section key={district}>
-            <h2 className="mb-3 flex items-center gap-2 text-lg font-extrabold text-tea-800">
-              <MapPin className="h-5 w-5 text-leaf-600" aria-hidden="true" />
+            <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
+              <MapPin className="h-4 w-4 text-gray-400" aria-hidden="true" />
               {t(`districts.${district}`)}
             </h2>
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {greenhouses
                 .filter((greenhouse) => greenhouse.district === district)
                 .map((greenhouse) => <GreenhouseCard key={greenhouse._id} greenhouse={greenhouse} />)}

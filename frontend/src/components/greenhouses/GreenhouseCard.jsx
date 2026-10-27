@@ -5,7 +5,7 @@ import Avatar from "../common/Avatar";
 import { GREENHOUSE_STATUS_STYLES, displayCode } from "../../utils/greenhouses";
 import { healthLevel } from "../../utils/metrics";
 
-const HEALTH_CHIP = { good: "bg-leaf-600 text-white", fair: "bg-gold-500 text-white", poor: "bg-red-600 text-white" };
+const HEALTH_TEXT = { good: "text-emerald-700", fair: "text-amber-700", poor: "text-red-700" };
 const pill = "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset";
 
 const GreenhouseCard = ({ greenhouse }) => {
@@ -15,24 +15,23 @@ const GreenhouseCard = ({ greenhouse }) => {
   return (
     <Link
       to={`/greenhouses/${greenhouse._id}`}
-      className="glass group flex flex-col overflow-hidden rounded-3xl shadow-xl shadow-tea-900/10 transition hover:-translate-y-0.5 hover:shadow-2xl"
+      className="panel group flex flex-col overflow-hidden rounded-lg transition-colors hover:border-gray-300"
     >
-      <div className="h-1.5 bg-gradient-to-r from-leaf-500 to-tea-600" />
-      <div className="flex flex-1 flex-col p-5">
+      <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-leaf-50 text-leaf-600">
-              <Warehouse className="h-6 w-6" aria-hidden="true" />
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-gray-100 text-gray-500">
+              <Warehouse className="h-5 w-5" aria-hidden="true" />
             </span>
             <div className="min-w-0">
-              <p className="text-xs font-extrabold uppercase tracking-wide text-leaf-700">{displayCode(t, greenhouse)}</p>
-              <h3 className="truncate text-lg font-extrabold text-gray-900">{greenhouse.name}</h3>
+              <p className="text-xs font-medium text-gray-500">{displayCode(t, greenhouse)}</p>
+              <h3 className="truncate text-base font-semibold text-gray-900">{greenhouse.name}</h3>
             </div>
           </div>
           {summary.healthScore !== null ? (
-            <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${HEALTH_CHIP[healthLevel(summary.healthScore)]}`}>{summary.healthScore}/100</span>
+            <span className={`text-sm font-semibold tabular-nums ${HEALTH_TEXT[healthLevel(summary.healthScore)]}`}>{summary.healthScore}<span className="text-xs font-normal text-gray-400">/100</span></span>
           ) : (
-            <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-500">{t("greenhouses.noHealth")}</span>
+            <span className="text-xs text-gray-400">{t("greenhouses.noHealth")}</span>
           )}
         </div>
 
@@ -54,24 +53,24 @@ const GreenhouseCard = ({ greenhouse }) => {
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-          <div className="flex items-center gap-2 rounded-xl bg-white/70 px-3 py-2 text-gray-600">
-            <Cpu className="h-4 w-4 text-cyan-600" aria-hidden="true" />
+          <div className="flex items-center gap-2 rounded-md bg-gray-50 px-3 py-2 text-gray-600">
+            <Cpu className="h-4 w-4 text-gray-400" aria-hidden="true" />
             <span>
               {t("greenhouses.nodes", { count: summary.nodeCount })}
               {summary.nodeCount > 0 && <span className="text-gray-400"> · {t("greenhouses.online", { count: summary.onlineCount })}</span>}
             </span>
           </div>
-          <div className="flex items-center gap-3 rounded-xl bg-white/70 px-3 py-2">
-            <span className="flex items-center gap-1 font-bold text-red-600">
+          <div className="flex items-center gap-3 rounded-md bg-gray-50 px-3 py-2">
+            <span className="flex items-center gap-1 font-semibold text-red-700">
               <CircleAlert className="h-4 w-4" aria-hidden="true" />{summary.criticalCount}
             </span>
-            <span className="flex items-center gap-1 font-bold text-gold-600">
+            <span className="flex items-center gap-1 font-semibold text-amber-700">
               <TriangleAlert className="h-4 w-4" aria-hidden="true" />{summary.warningCount}
             </span>
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/70 pt-3">
+        <div className="mt-4 flex items-center justify-between gap-3 border-t border-gray-100 pt-3">
           <div className="flex items-center gap-2 text-xs text-gray-500">
             <Users className="h-4 w-4" aria-hidden="true" />
             {greenhouse.assignedUsers.length === 0 ? (
@@ -84,7 +83,7 @@ const GreenhouseCard = ({ greenhouse }) => {
               </span>
             )}
           </div>
-          <span className="inline-flex items-center gap-1 text-sm font-bold text-leaf-700 group-hover:text-leaf-600">
+          <span className="inline-flex items-center gap-1 text-sm font-medium text-leaf-700 group-hover:underline">
             {t("greenhouses.details")}
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </span>

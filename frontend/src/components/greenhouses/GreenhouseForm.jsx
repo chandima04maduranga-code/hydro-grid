@@ -74,7 +74,7 @@ const GreenhouseForm = ({ initial, districts, nextCodes, onSubmit, onCancel }) =
       </div>
 
       {creating && form.district && nextCodes?.[form.district] && (
-        <p className="flex items-center gap-2 rounded-xl bg-leaf-50/80 px-3 py-2 text-sm font-semibold text-leaf-700">
+        <p className="flex items-center gap-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
           <Hash className="h-4 w-4" aria-hidden="true" />
           {t("greenhouses.nextCode", { code: `${t(`districts.${form.district}`)} GH-${nextCodes[form.district].split(" GH-").pop()}` })}
         </p>
@@ -112,20 +112,20 @@ const GreenhouseForm = ({ initial, districts, nextCodes, onSubmit, onCancel }) =
           maxLength={500}
           value={form.notes}
           onChange={update("notes")}
-          className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-gray-900 focus:border-leaf-500 focus:outline-none focus:ring-4 focus:ring-leaf-500/15"
+          className="w-full rounded-md border border-gray-200 bg-white px-3.5 py-2.5 text-gray-900 focus:border-leaf-500 focus:outline-none focus:ring-2 focus:ring-leaf-500/20"
         />
       </div>
 
       <div className="flex justify-end gap-2">
         {onCancel && (
-          <button type="button" onClick={onCancel} className="rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-200">
+          <button type="button" onClick={onCancel} className="btn btn-secondary">
             {t("greenhouses.cancel")}
           </button>
         )}
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-leaf-500 to-tea-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-leaf-500/25 hover:from-leaf-600 hover:to-tea-700 disabled:opacity-70"
+          className="btn btn-primary"
         >
           {submitting ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="h-4 w-4" aria-hidden="true" />}
           {creating
