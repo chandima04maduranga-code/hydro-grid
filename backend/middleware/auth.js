@@ -1,16 +1,18 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { SESSION_COOKIE } = require('../utils/session');
 
 const COMPANY_FIELDS = 'name district status plan billingCycle trialEndsAt';
 
-// Verifies the Bearer token and loads the current user with their company.
+// Verifies the session token (httpOnly cookie from the browser, or a Bearer
+// header from API clients) and loads the current user with their company.
 // Users who are no longer active, or whose company is no longer active, are
 // rejected even if their token is still valid.
 module.exports = async function auth(req, res, next) {
-  const header = req.header('Authorization') || '';
-  const [scheme, token] = header.split(' ');
+  const [scheme, bearer] = (req.header('Authorization') || '').split(' ');
+  const token = req.cookies?.[SESSION_COOKIE] || (scheme === 'Bearer' ? bearer : null);
 
-  if (scheme !== 'Bearer' || !token) {
+  if (!token) {
     return res.status(401).json({ code: 'NO_TOKEN', message: 'Authentication required' });
   }
 

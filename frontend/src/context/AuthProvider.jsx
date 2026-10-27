@@ -1,18 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import apiClient, { setUnauthorizedHandler } from "../api/axiosConfig";
-import { clearToken, getToken, saveToken } from "../auth/tokenStorage";
 import { AuthContext } from "./AuthContext";
 
-// status: "checking" (validating a saved token) | "authenticated" | "guest"
+// status: "checking" (asking the server about the session cookie) | "authenticated" | "guest"
 const AuthProvider = ({ children }) => {
   const { i18n } = useTranslation();
   const [user, setUser] = useState(null);
-  const [status, setStatus] = useState(() => (getToken() ? "checking" : "guest"));
+  const [status, setStatus] = useState("checking");
   const [sessionExpired, setSessionExpired] = useState(false);
 
   const endSession = useCallback(() => {
-    clearToken();
     setUser(null);
     setStatus("guest");
   }, []);
@@ -35,17 +33,15 @@ const AuthProvider = ({ children }) => {
     return () => setUnauthorizedHandler(null);
   }, [endSession]);
 
-  // Restore a saved session on page load
+  // Restore the session on page load (the cookie, if any, is sent automatically)
   useEffect(() => {
-    if (!getToken()) return;
     apiClient.get("/auth/me")
       .then(({ data }) => startSession(data.user))
       .catch(() => endSession());
   }, [startSession, endSession]);
 
   const login = useCallback(async (companyId, email, password, remember) => {
-    const { data } = await apiClient.post("/auth/login", { companyId, email, password });
-    saveToken(data.token, remember);
+    const { data } = await apiClient.post("/auth/login", { companyId, email, password, remember });
     startSession(data.user);
     return data.user;
   }, [startSession]);
@@ -58,6 +54,8 @@ const AuthProvider = ({ children }) => {
   const logout = useCallback(() => {
     setSessionExpired(false);
     endSession();
+    // Clears the httpOnly cookie, which page scripts cannot remove themselves
+    apiClient.post("/auth/logout").catch(() => {});
   }, [endSession]);
 
   // Switch the UI language and remember it on the user's profile
