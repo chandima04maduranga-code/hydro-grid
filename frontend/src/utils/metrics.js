@@ -40,10 +40,10 @@ export const toneFor = (evaluation) => {
 };
 
 export const TONE_STYLES = {
-  good: { chip: "bg-leaf-50 text-leaf-700 ring-leaf-500/25", icon: "bg-leaf-50 text-leaf-600", value: "text-gray-900", border: "border-leaf-500/20" },
-  warning: { chip: "bg-gold-100 text-gold-600 ring-gold-400/40", icon: "bg-gold-100 text-gold-600", value: "text-gold-600", border: "border-gold-400/50" },
-  critical: { chip: "bg-red-50 text-red-700 ring-red-400/40", icon: "bg-red-50 text-red-600", value: "text-red-600", border: "border-red-400/60" },
-  muted: { chip: "bg-gray-100 text-gray-500 ring-gray-200", icon: "bg-gray-100 text-gray-400", value: "text-gray-400", border: "border-gray-200" }
+  good: { dot: "bg-emerald-500", text: "text-gray-500", value: "text-gray-900" },
+  warning: { dot: "bg-amber-500", text: "text-amber-700", value: "text-amber-700" },
+  critical: { dot: "bg-red-600", text: "text-red-700", value: "text-red-700" },
+  muted: { dot: "bg-gray-300", text: "text-gray-400", value: "text-gray-400" }
 };
 
 export const healthLevel = (score) => (score >= 80 ? "good" : score >= 50 ? "fair" : "poor");

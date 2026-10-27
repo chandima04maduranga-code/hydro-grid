@@ -1,71 +1,57 @@
 import { useTranslation } from "react-i18next";
-import { CircleAlert, HeartPulse, TriangleAlert, Wifi } from "lucide-react";
 import { healthLevel } from "../../utils/metrics";
 
 const LEVEL_STYLES = {
-  good: { stroke: "#2f9e44", text: "text-leaf-700", label: "telemetry.healthGood" },
-  fair: { stroke: "#c58b2a", text: "text-gold-600", label: "telemetry.healthFair" },
-  poor: { stroke: "#dc2626", text: "text-red-600", label: "telemetry.healthPoor" }
+  good: { text: "text-emerald-700", bar: "bg-emerald-600", label: "telemetry.healthGood" },
+  fair: { text: "text-amber-700", bar: "bg-amber-500", label: "telemetry.healthFair" },
+  poor: { text: "text-red-700", bar: "bg-red-600", label: "telemetry.healthPoor" }
 };
 
-const RADIUS = 52;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+const Tile = ({ label, children, footer }) => (
+  <div className="panel px-4 py-3">
+    <p className="text-xs font-medium text-gray-500">{label}</p>
+    <div className="mt-1 flex items-baseline gap-2">{children}</div>
+    {footer && <div className="mt-2">{footer}</div>}
+  </div>
+);
 
-// Farm-wide health: average node score as a ring, plus issue and node counts
+// KPI strip: farm health score, problem counts and nodes online
 const HealthSummary = ({ nodes }) => {
   const { t } = useTranslation();
-  const scored = nodes.filter((node) => node.online);
-  const score = scored.length
-    ? Math.round(scored.reduce((sum, node) => sum + node.assessment.healthScore, 0) / scored.length)
+  const online = nodes.filter((node) => node.online);
+  const score = online.length
+    ? Math.round(online.reduce((sum, node) => sum + node.assessment.healthScore, 0) / online.length)
     : 0;
-  const issues = scored.flatMap((node) => node.assessment.issues);
+  const issues = online.flatMap((node) => node.assessment.issues);
   const critical = issues.filter((issue) => issue.severity === "critical").length;
   const warnings = issues.length - critical;
   const level = LEVEL_STYLES[healthLevel(score)];
 
   return (
-    <section className="glass flex h-full flex-col rounded-3xl p-6 shadow-xl shadow-tea-900/10">
-      <h2 className="flex items-center gap-2 text-lg font-extrabold text-gray-900">
-        <HeartPulse className="h-5 w-5 text-leaf-600" aria-hidden="true" />
-        {t("telemetry.healthTitle")}
-      </h2>
-
-      <div className="mt-4 flex items-center gap-6">
-        <div className="relative h-32 w-32 shrink-0" role="img" aria-label={`${t("telemetry.healthScore")}: ${score} / 100`}>
-          <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-            <circle cx="60" cy="60" r={RADIUS} fill="none" stroke="#e5e7eb" strokeWidth="12" />
-            <circle
-              cx="60" cy="60" r={RADIUS} fill="none" stroke={level.stroke} strokeWidth="12" strokeLinecap="round"
-              strokeDasharray={CIRCUMFERENCE} strokeDashoffset={CIRCUMFERENCE * (1 - score / 100)}
-              className="transition-[stroke-dashoffset] duration-700"
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className={`text-3xl font-extrabold ${level.text}`}>{score}</span>
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">/ 100</span>
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <Tile
+        label={t("telemetry.healthScore")}
+        footer={
+          <div className="h-1.5 overflow-hidden rounded-full bg-gray-100" role="img" aria-label={`${score} / 100`}>
+            <div className={`h-full ${level.bar}`} style={{ width: `${score}%` }} />
           </div>
-        </div>
-        <div>
-          <p className={`text-xl font-extrabold ${level.text}`}>{t(level.label)}</p>
-          <p className="text-xs text-gray-500">{t("telemetry.healthScore")}</p>
-        </div>
-      </div>
-
-      <ul className="mt-6 space-y-2 text-sm">
-        <li className="flex items-center gap-2 font-semibold text-red-600">
-          <CircleAlert className="h-4 w-4" aria-hidden="true" />
-          {t("telemetry.criticalCount", { count: critical })}
-        </li>
-        <li className="flex items-center gap-2 font-semibold text-gold-600">
-          <TriangleAlert className="h-4 w-4" aria-hidden="true" />
-          {t("telemetry.warningCount", { count: warnings })}
-        </li>
-        <li className="flex items-center gap-2 text-gray-600">
-          <Wifi className="h-4 w-4 text-leaf-600" aria-hidden="true" />
-          {t("telemetry.nodesOnline", { online: scored.length, total: nodes.length })}
-        </li>
-      </ul>
-    </section>
+        }
+      >
+        <span className="text-2xl font-semibold tabular-nums text-gray-900">{score}</span>
+        <span className="text-sm text-gray-400">/ 100</span>
+        <span className={`ml-auto text-xs font-semibold ${level.text}`}>{t(level.label)}</span>
+      </Tile>
+      <Tile label={t("severity.critical")}>
+        <span className={`text-2xl font-semibold tabular-nums ${critical ? "text-red-700" : "text-gray-900"}`}>{critical}</span>
+      </Tile>
+      <Tile label={t("severity.warning")}>
+        <span className={`text-2xl font-semibold tabular-nums ${warnings ? "text-amber-700" : "text-gray-900"}`}>{warnings}</span>
+      </Tile>
+      <Tile label={t("telemetry.nodes")}>
+        <span className="text-2xl font-semibold tabular-nums text-gray-900">{online.length}</span>
+        <span className="text-sm text-gray-400">/ {nodes.length} {t("telemetry.online").toLowerCase()}</span>
+      </Tile>
+    </div>
   );
 };
 
