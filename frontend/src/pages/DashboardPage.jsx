@@ -137,10 +137,11 @@ const DashboardPage = () => {
   const nodes = activeTab === "all" ? allNodes : allNodes.filter(inTab);
   const plants = activeTab === "all" ? allPlants : allPlants.filter(inTab);
   const showOverview = activeTab === "all" && greenhouses.length > 0;
+  const selectedGreenhouse = greenhouses.find((greenhouse) => greenhouse._id === activeTab);
 
   return (
     <div className="space-y-6">
-      <TimeOfDayBanner name={user.name} company={user.company} lastUpdated={lastUpdated} />
+      <TimeOfDayBanner name={user.name} company={user.company} lastUpdated={lastUpdated} crop={selectedGreenhouse?.mainCrop} />
 
       {tabs.length > 2 && (
         <div role="tablist" aria-label={t("nav.greenhouses")} className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
