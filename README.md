@@ -112,11 +112,13 @@ Hydro_Grid/
    - Frontend: http://localhost:5173
    - API: http://localhost:5000/api (health check: `/api/health`)
 
-5. **Add companies**: register one on the login page (**Register your company**) and approve it as the platform admin, or create the demo companies listed in `backend/scripts/demo-companies.json` (already approved; you type each company admin's details):
+5. **Add companies**: register one on the login page (**Register your company**) and approve it as the platform admin, or build the full demo from `backend/scripts/demo-data.json`:
 
    ```bash
-   npm run setup-demo-companies
+   npm run setup-demo
    ```
+
+   This creates Agri Lanka (Pvt) Ltd and Green Farmers (Pvt) Ltd (already approved) with role-based demo staff (`admin@agrilanka.test`, `manager@agrilanka.test`, `officer1@agrilanka.test`, … `officer@greenfarmers.test`), greenhouses with assigned staff, one sensor node per greenhouse with 24 hours of readings, and crop records. All demo accounts share the password in `DEMO_PASSWORD` (backend/.env), or the one you type when asked. It prints the simulator command for each company.
 
 6. **Start virtual IoT nodes** for a company (optional, third terminal)
 
