@@ -20,6 +20,7 @@ const { CROPS } = require('../config/crops');
 const { METRICS } = require('../config/metrics');
 const { isStrongPassword, MIN_PASSWORD_LENGTH } = require('../utils/validators');
 const { connectDb, createPrompter } = require('./lib/cli');
+const { generateDeviceKey, hashDeviceKey, readSavedKeys, saveKey } = require('../utils/deviceKeys');
 
 const DEMO_FILE = path.join(__dirname, 'demo-data.json');
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -231,6 +232,13 @@ const main = async () => {
       const crops = await ensureCrops(company, greenhouse, spec, demo.photos);
       console.log(`   🏠 ${`${greenhouse.code} · ${greenhouse.name}`.padEnd(40)} staff: ${spec.staff.join(', ')} · node ${spec.node.nodeId}${nodeResult.created ? ` (+${nodeResult.readings} readings)` : ''} · ${crops} new crops`);
       nodeArgs.push(`${spec.node.nodeId}:${spec.mainCrop}`);
+    }
+    // Device key for the virtual nodes, kept in the git-ignored keys file
+    if (!readSavedKeys()[company._id]) {
+      const key = generateDeviceKey();
+      await Company.updateOne({ _id: company._id }, { deviceKeyHash: hashDeviceKey(key) });
+      saveKey(company._id, key);
+      console.log('   🔑 Device key created and saved to backend/.device-keys.json');
     }
     simulatorCommands.push({ company: company.name, command: `npm run simulate -- ${company._id} ${nodeArgs.join(',')} 10` });
   }

@@ -1,16 +1,10 @@
 import axios from "axios";
-import { getToken } from "../auth/tokenStorage";
 
+// The session lives in an httpOnly cookie set by the server, so page scripts
+// never see the login token; the browser attaches the cookie to API calls.
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
-});
-
-apiClient.interceptors.request.use((config) => {
-  const token = getToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+  withCredentials: true,
 });
 
 // The auth layer registers a handler to react when the server rejects the session
@@ -19,7 +13,8 @@ export const setUnauthorizedHandler = (handler) => {
   unauthorizedHandler = handler;
 };
 
-const PUBLIC_AUTH_ROUTES = ["/auth/login", "/auth/register"];
+// A 401 from these just means "not logged in", not "your session expired"
+const PUBLIC_AUTH_ROUTES = ["/auth/login", "/auth/register", "/auth/me"];
 
 apiClient.interceptors.response.use(
   (response) => response,

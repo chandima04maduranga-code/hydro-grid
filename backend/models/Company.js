@@ -16,12 +16,15 @@ const CompanySchema = new mongoose.Schema({
   billingCycle: { type: String, enum: BILLING_CYCLES, default: 'monthly' },
   trialEndsAt: { type: Date },
   reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  reviewedAt: { type: Date }
+  reviewedAt: { type: Date },
+  // SHA-256 of the company's device key (see utils/deviceKeys.js); never sent to clients
+  deviceKeyHash: { type: String, select: false, unique: true, sparse: true }
 }, { timestamps: true });
 
 CompanySchema.set('toJSON', {
   transform: (doc, ret) => {
     delete ret.nameKey;
+    delete ret.deviceKeyHash;
     delete ret.__v;
     return ret;
   }

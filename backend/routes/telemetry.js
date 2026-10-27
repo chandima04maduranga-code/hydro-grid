@@ -12,6 +12,7 @@ const { CROPS, CROP_IDS } = require('../config/crops');
 const { PLANS } = require('../config/plans');
 const { assessNode, rangesFor } = require('../services/advisor');
 const { greenhouseFilterFor, seesAllGreenhouses, visibleGreenhouseIds } = require('../services/access');
+const { DEVICE_KEY_HEADER, hashDeviceKey } = require('../utils/deviceKeys');
 
 const router = express.Router();
 
@@ -56,14 +57,15 @@ const withAssessment = (node, now = new Date()) => {
 
 // @route   POST /api/telemetry
 // @desc    Ingest a batch of readings from one node:
-//          { companyId, nodeId, location?, readings: { ph: 6.1, ec: 1.2, ... } }
-//          Until device API keys arrive (security hardening), a node names its company.
-// @access  Devices
+//          { nodeId, location?, readings: { ph: 6.1, ec: 1.2, ... } }
+//          The company is found from the X-Device-Key header.
+// @access  Devices with a valid device key
 router.post('/', async (req, res) => {
-  const { companyId, nodeId, location, readings } = req.body;
+  const { nodeId, location, readings } = req.body;
+  const deviceKey = req.get(DEVICE_KEY_HEADER);
 
-  if (!mongoose.isValidObjectId(companyId)) {
-    return res.status(400).json({ code: 'COMPANY_NOT_FOUND', message: 'Unknown or inactive company' });
+  if (typeof deviceKey !== 'string' || deviceKey.length < 20 || deviceKey.length > 100) {
+    return res.status(401).json({ code: 'DEVICE_KEY_REQUIRED', message: `Send the company device key in the ${DEVICE_KEY_HEADER} header` });
   }
   if (typeof nodeId !== 'string' || !NODE_ID_PATTERN.test(nodeId)) {
     return res.status(400).json({ code: 'INVALID_NODE_ID', message: 'nodeId must be 2-40 letters, digits, _ or -' });
@@ -76,9 +78,9 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const company = await Company.findOne({ _id: companyId, status: 'active' }).select('plan');
+    const company = await Company.findOne({ deviceKeyHash: hashDeviceKey(deviceKey), status: 'active' }).select('plan');
     if (!company) {
-      return res.status(400).json({ code: 'COMPANY_NOT_FOUND', message: 'Unknown or inactive company' });
+      return res.status(401).json({ code: 'INVALID_DEVICE_KEY', message: 'Unknown device key or inactive company' });
     }
 
     // New nodes count against the plan's sensor node limit

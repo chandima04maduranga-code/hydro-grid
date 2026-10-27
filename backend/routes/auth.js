@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 const User = require('../models/User');
 const Company = require('../models/Company');
 const auth = require('../middleware/auth');
+const { loginLimiter, registerLimiter } = require('../middleware/security');
+const { SESSION_HOURS, setSessionCookie, clearSessionCookie } = require('../utils/session');
 const { COMPANY_FIELDS } = require('../middleware/auth');
 const {
   isNonEmptyString,
@@ -16,7 +18,7 @@ const {
 
 const router = express.Router();
 
-const TOKEN_TTL = '8h';
+const TOKEN_TTL = `${SESSION_HOURS}h`;
 const BCRYPT_ROUNDS = 12;
 
 // Login picker value for platform administrators (who belong to no company)
@@ -44,7 +46,7 @@ const serverError = (res, context, err) => {
 // @desc    Request an account in a company. It stays pending until that
 //          company's admin approves it.
 // @access  Public
-router.post('/register', async (req, res) => {
+router.post('/register', registerLimiter, async (req, res) => {
   const { companyId, name, email, phone, password, preferredLanguage } = req.body;
 
   const errors = {};
@@ -88,10 +90,11 @@ router.post('/register', async (req, res) => {
 });
 
 // @route   POST /api/auth/login
-// @desc    Log in to a company (or to the platform) and receive a JWT
+// @desc    Log in to a company (or to the platform). The JWT is set as an
+//          httpOnly cookie and is never sent to page scripts.
 // @access  Public
-router.post('/login', async (req, res) => {
-  const { companyId, email, password } = req.body;
+router.post('/login', loginLimiter, async (req, res) => {
+  const { companyId, email, password, remember } = req.body;
 
   const validCompany = companyId === PLATFORM_LOGIN || mongoose.isValidObjectId(companyId);
   if (!validCompany || !isValidEmail(email) || !isNonEmptyString(password)) {
@@ -132,10 +135,19 @@ router.post('/login', async (req, res) => {
     user.lastLoginAt = new Date();
     await user.save();
 
-    res.json({ token: signToken(user), user });
+    setSessionCookie(res, signToken(user), remember === true);
+    res.json({ user });
   } catch (err) {
     serverError(res, 'Login error', err);
   }
+});
+
+// @route   POST /api/auth/logout
+// @desc    End the session by clearing the cookie
+// @access  Public
+router.post('/logout', (req, res) => {
+  clearSessionCookie(res);
+  res.status(204).end();
 });
 
 // @route   GET /api/auth/me

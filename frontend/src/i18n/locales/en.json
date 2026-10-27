@@ -111,7 +111,9 @@
     "GREENHOUSE_HAS_NODES": "Move or remove this greenhouse's sensor nodes first.",
     "INVALID_STAFF": "Only active farm managers and field officers of your company can be assigned.",
     "NODE_NOT_FOUND": "Sensor node not found.",
-    "TRY_AGAIN": "Please try again."
+    "TRY_AGAIN": "Please try again.",
+    "TOO_MANY_ATTEMPTS": "Too many attempts. Please wait 15 minutes and try again.",
+    "TOO_MANY_REQUESTS": "Too many requests. Please wait a moment and try again."
   },
   "fields": {
     "REQUIRED": "This field is required",

@@ -5,6 +5,7 @@ const Company = require('../models/Company');
 const User = require('../models/User');
 const { PLANS, PLAN_IDS, BILLING_CYCLES, YEARLY_MONTHS_CHARGED } = require('../config/plans');
 const { DISTRICTS } = require('../config/districts');
+const { registerLimiter } = require('../middleware/security');
 const {
   isNonEmptyString,
   isValidEmail,
@@ -48,7 +49,7 @@ router.get('/', async (req, res) => {
 // @desc    Register a company with its first administrator.
 //          The company stays pending until a platform admin approves it.
 // @access  Public
-router.post('/register', async (req, res) => {
+router.post('/register', registerLimiter, async (req, res) => {
   const { company = {}, admin = {}, plan, billingCycle = 'monthly' } = req.body;
 
   const errors = {};
