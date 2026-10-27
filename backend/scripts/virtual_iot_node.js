@@ -4,12 +4,16 @@
 // grow-bag moisture, and occasional air-pump failures, so the dashboard's
 // advice can be seen in action.
 //
-// Usage: npm run simulate -- <companyId> [nodeCount] [intervalSeconds]
+// Usage: npm run simulate -- <companyId> [nodes] [intervalSeconds]
+//   nodes: a count (NODE_AGRI_01, NODE_AGRI_02, ...) or a list of
+//          nodeId:crop pairs, e.g. NODE_01:tomato,NODE_02:lettuce
 //   or set SIM_COMPANY_ID, SIM_NODES, SIM_INTERVAL_SECONDS, SIM_SERVER_URL
 const axios = require("axios");
+const { CROPS, DEFAULT_CROP } = require("../config/crops");
+const { METRICS } = require("../config/metrics");
 
 const COMPANY_ID = process.argv[2] || process.env.SIM_COMPANY_ID;
-const NODE_COUNT = Number(process.argv[3] || process.env.SIM_NODES || 2);
+const NODES_ARG = String(process.argv[3] || process.env.SIM_NODES || 2);
 const INTERVAL_SECONDS = Number(process.argv[4] || process.env.SIM_INTERVAL_SECONDS || 10);
 const SERVER_URL = process.env.SIM_SERVER_URL || "http://localhost:5000/api/telemetry";
 
@@ -40,15 +44,37 @@ const dayCurve = (hour) => {
   return curve > 0 ? curve : curve * 0.4;
 };
 
-const createNode = (index) => ({
-  nodeId: `NODE_AGRI_${String(index + 1).padStart(2, "0")}`,
-  location: `Greenhouse bay ${index + 1}`,
-  waterLevel: 70 + Math.random() * 25,
-  ph: 5.8 + Math.random() * 0.4,
-  ec: 1.1 + Math.random() * 0.4,
-  substrateMoisture: 55 + Math.random() * 10,
-  pumpFailureTicks: 0
-});
+// Nutrient strength (EC) band for the node's crop
+const ecBandFor = (crop) => CROPS[crop]?.ec || METRICS.ec.optimal;
+
+const createNode = (index, nodeId, crop = DEFAULT_CROP) => {
+  const [low, high] = ecBandFor(crop);
+  return {
+    nodeId,
+    crop,
+    location: `Greenhouse bay ${index + 1}`,
+    waterLevel: 70 + Math.random() * 25,
+    ph: 5.8 + Math.random() * 0.4,
+    ec: low + (high - low) * (0.5 + Math.random() * 0.4),
+    substrateMoisture: 55 + Math.random() * 10,
+    pumpFailureTicks: 0
+  };
+};
+
+// "3" → NODE_AGRI_01..03; "NODE_01:tomato,NODE_02" → named nodes with crops
+const parseNodes = (arg) => {
+  if (/^\d+$/.test(arg)) {
+    return Array.from({ length: Number(arg) }, (_, index) => createNode(index, `NODE_AGRI_${String(index + 1).padStart(2, "0")}`));
+  }
+  return arg.split(",").map((part, index) => {
+    const [nodeId, crop] = part.trim().split(":");
+    if (crop && !CROPS[crop]) {
+      console.error(`❌ Unknown crop "${crop}". Use one of: ${Object.keys(CROPS).join(", ")}`);
+      process.exit(1);
+    }
+    return createNode(index, nodeId, crop);
+  });
+};
 
 // Advances one node by one reading and returns the values to send
 const step = (node) => {
@@ -62,8 +88,9 @@ const step = (node) => {
   if (node.waterLevel < 12) node.waterLevel = 92; // reservoir topped up
   node.ph += 0.004 + noise(0.003);
   if (node.ph > 7.3) node.ph = 5.8; // pH down dosed
-  node.ec -= 0.002 + noise(0.002);
-  if (node.ec < 0.6) node.ec = 1.4; // nutrients added
+  const [ecLow, ecHigh] = ecBandFor(node.crop);
+  node.ec -= (ecHigh - ecLow) * (0.005 + noise(0.004));
+  if (node.ec < ecLow * 0.75) node.ec = ecHigh * 0.95; // nutrients added
   node.substrateMoisture -= 0.15 + daylight * 0.2;
   if (node.substrateMoisture < 32) node.substrateMoisture = 68; // irrigation cycle
 
@@ -88,7 +115,7 @@ const step = (node) => {
   };
 };
 
-const nodes = Array.from({ length: NODE_COUNT }, (_, index) => createNode(index));
+const nodes = parseNodes(NODES_ARG);
 
 const transmit = async (node) => {
   const readings = step(node);
@@ -102,7 +129,7 @@ const transmit = async (node) => {
   }
 };
 
-console.log(`Starting ${NODE_COUNT} virtual node(s) for company ${COMPANY_ID}, every ${INTERVAL_SECONDS}s → ${SERVER_URL}`);
+console.log(`Starting ${nodes.length} virtual node(s) [${nodes.map((node) => `${node.nodeId}:${node.crop}`).join(", ")}] for company ${COMPANY_ID}, every ${INTERVAL_SECONDS}s → ${SERVER_URL}`);
 const tick = () => Promise.all(nodes.map(transmit));
 tick();
 setInterval(tick, INTERVAL_SECONDS * 1000);
