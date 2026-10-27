@@ -24,7 +24,11 @@ const LoginPage = () => {
   const location = useLocation();
   const { companies, loading: loadingCompanies } = useCompanies();
 
-  const [companyId, setCompanyId] = useState(readLastCompany);
+  const [savedCompanyId, setCompanyId] = useState(readLastCompany);
+  // A remembered company that is no longer listed (removed or suspended) is ignored
+  const companyId = loadingCompanies || savedCompanyId === PLATFORM_LOGIN || companies.some((company) => company._id === savedCompanyId)
+    ? savedCompanyId
+    : "";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
