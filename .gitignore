@@ -22,3 +22,6 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# Device keys for the virtual sensor nodes (secrets)
+.device-keys.json

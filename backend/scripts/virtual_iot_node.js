@@ -9,9 +9,12 @@
 //   nodes: a count (NODE_AGRI_01, NODE_AGRI_02, ...) or a list of
 //          nodeId:crop pairs, e.g. NODE_01:tomato,NODE_02:lettuce
 //   or set SIM_COMPANY_ID, SIM_NODES, SIM_INTERVAL_SECONDS, SIM_SERVER_URL
+// The company's device key comes from DEVICE_KEY or from backend/.device-keys.json
+// (created by `npm run device-key -- <companyId>` or `npm run setup-demo`).
 const axios = require("axios");
 const { CROPS, DEFAULT_CROP } = require("../config/crops");
 const { METRICS } = require("../config/metrics");
+const { DEVICE_KEY_HEADER, readSavedKeys } = require("../utils/deviceKeys");
 
 const COMPANY_ID = process.argv[2] || process.env.SIM_COMPANY_ID;
 const NODES_ARG = String(process.argv[3] || process.env.SIM_NODES || 2);
@@ -20,6 +23,12 @@ const SERVER_URL = process.env.SIM_SERVER_URL || "http://localhost:5000/api/tele
 
 if (!COMPANY_ID) {
   console.error("❌ Missing company id. Usage: npm run simulate -- <companyId> [nodeCount] [intervalSeconds]");
+  process.exit(1);
+}
+
+const DEVICE_KEY = process.env.DEVICE_KEY || readSavedKeys()[COMPANY_ID];
+if (!DEVICE_KEY) {
+  console.error(`❌ No device key for company ${COMPANY_ID}. Create one with: npm run device-key -- ${COMPANY_ID}`);
   process.exit(1);
 }
 
@@ -131,7 +140,7 @@ const nodes = parseNodes(NODES_ARG);
 const transmit = async (node) => {
   const readings = step(node);
   try {
-    await axios.post(SERVER_URL, { companyId: COMPANY_ID, nodeId: node.nodeId, location: node.location, readings });
+    await axios.post(SERVER_URL, { nodeId: node.nodeId, location: node.location, readings }, { headers: { [DEVICE_KEY_HEADER]: DEVICE_KEY } });
     const pump = (node.pumpFailureTicks > 0 ? " ⚠ air pump failure" : "") + (node.clogTicks > 0 ? " ⚠ circulation pump blocked" : "");
     console.log(`[${node.nodeId}] pH ${readings.ph} · EC ${readings.ec} · water ${readings.waterLevel}% · flow ${readings.flowRate} L/min · DO ${readings.dissolvedOxygen} mg/L · air ${readings.airTemp}°C${pump}`);
   } catch (error) {
