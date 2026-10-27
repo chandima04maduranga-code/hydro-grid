@@ -1,17 +1,21 @@
 import { useTranslation } from "react-i18next";
-import { healthLevel } from "../../utils/metrics";
+import { CircleAlert, Cpu, TriangleAlert } from "lucide-react";
+import HealthRing from "./HealthRing";
+import { HEALTH_COLORS, healthLevel } from "../../utils/metrics";
 
-const LEVEL_STYLES = {
-  good: { text: "text-emerald-700", bar: "bg-emerald-600", label: "telemetry.healthGood" },
-  fair: { text: "text-amber-700", bar: "bg-amber-500", label: "telemetry.healthFair" },
-  poor: { text: "text-red-700", bar: "bg-red-600", label: "telemetry.healthPoor" }
-};
+const LEVEL_LABELS = { good: "telemetry.healthGood", fair: "telemetry.healthFair", poor: "telemetry.healthPoor" };
 
-const Tile = ({ label, children, footer }) => (
-  <div className="panel px-4 py-3">
-    <p className="text-xs font-medium text-gray-500">{label}</p>
-    <div className="mt-1 flex items-baseline gap-2">{children}</div>
-    {footer && <div className="mt-2">{footer}</div>}
+const Tile = ({ tint, icon: Icon, iconStyle, label, children }) => (
+  <div className={`flex items-center gap-3 rounded-lg p-4 ring-1 ${tint}`}>
+    {Icon && (
+      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${iconStyle}`}>
+        <Icon className="h-5 w-5" aria-hidden="true" />
+      </span>
+    )}
+    <div className="min-w-0">
+      <p className="text-xs font-medium text-gray-600">{label}</p>
+      <div className="mt-0.5 flex items-baseline gap-1.5">{children}</div>
+    </div>
   </div>
 );
 
@@ -25,31 +29,36 @@ const HealthSummary = ({ nodes }) => {
   const issues = online.flatMap((node) => node.assessment.issues);
   const critical = issues.filter((issue) => issue.severity === "critical").length;
   const warnings = issues.length - critical;
-  const level = LEVEL_STYLES[healthLevel(score)];
+  const level = healthLevel(score);
 
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className={`flex items-center gap-3 rounded-lg p-4 ring-1 ${HEALTH_COLORS[level].tint}`}>
+        <HealthRing score={score} size={48} />
+        <div>
+          <p className="text-xs font-medium text-gray-600">{t("telemetry.healthScore")}</p>
+          <p className={`text-sm font-semibold ${HEALTH_COLORS[level].text}`}>{t(LEVEL_LABELS[level])}</p>
+        </div>
+      </div>
       <Tile
-        label={t("telemetry.healthScore")}
-        footer={
-          <div className="h-1.5 overflow-hidden rounded-full bg-gray-100" role="img" aria-label={`${score} / 100`}>
-            <div className={`h-full ${level.bar}`} style={{ width: `${score}%` }} />
-          </div>
-        }
+        tint={critical ? "bg-red-50 ring-red-100" : "bg-white ring-gray-200"}
+        icon={CircleAlert}
+        iconStyle={critical ? "bg-red-600 text-white" : "bg-gray-100 text-gray-400"}
+        label={t("severity.critical")}
       >
-        <span className="text-2xl font-semibold tabular-nums text-gray-900">{score}</span>
-        <span className="text-sm text-gray-400">/ 100</span>
-        <span className={`ml-auto text-xs font-semibold ${level.text}`}>{t(level.label)}</span>
+        <span className={`text-2xl font-bold tabular-nums ${critical ? "text-red-700" : "text-gray-900"}`}>{critical}</span>
       </Tile>
-      <Tile label={t("severity.critical")}>
-        <span className={`text-2xl font-semibold tabular-nums ${critical ? "text-red-700" : "text-gray-900"}`}>{critical}</span>
+      <Tile
+        tint={warnings ? "bg-amber-50 ring-amber-100" : "bg-white ring-gray-200"}
+        icon={TriangleAlert}
+        iconStyle={warnings ? "bg-amber-500 text-white" : "bg-gray-100 text-gray-400"}
+        label={t("severity.warning")}
+      >
+        <span className={`text-2xl font-bold tabular-nums ${warnings ? "text-amber-700" : "text-gray-900"}`}>{warnings}</span>
       </Tile>
-      <Tile label={t("severity.warning")}>
-        <span className={`text-2xl font-semibold tabular-nums ${warnings ? "text-amber-700" : "text-gray-900"}`}>{warnings}</span>
-      </Tile>
-      <Tile label={t("telemetry.nodes")}>
-        <span className="text-2xl font-semibold tabular-nums text-gray-900">{online.length}</span>
-        <span className="text-sm text-gray-400">/ {nodes.length} {t("telemetry.online").toLowerCase()}</span>
+      <Tile tint="bg-sky-50 ring-sky-100" icon={Cpu} iconStyle="bg-sky-600 text-white" label={t("telemetry.nodes")}>
+        <span className="text-2xl font-bold tabular-nums text-gray-900">{online.length}</span>
+        <span className="text-sm text-gray-500">/ {nodes.length} {t("telemetry.online").toLowerCase()}</span>
       </Tile>
     </div>
   );
