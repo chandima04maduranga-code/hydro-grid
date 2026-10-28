@@ -25,8 +25,8 @@
           "staff": ["manager", "officer1"],
           "node": { "nodeId": "NODE_01", "location": "Row A" },
           "crops": [
-            { "name": "Tomato – Row A", "species": "Solanum lycopersicum", "cropType": "Fruit vegetable", "growthStage": "Flowering", "healthStatus": "Healthy", "photo": "tomato" },
-            { "name": "Tomato – Row B", "species": "Solanum lycopersicum", "cropType": "Fruit vegetable", "growthStage": "Fruiting", "healthStatus": "Nutrient Warning", "photo": "tomato" }
+            { "name": "Tomato – Row A", "species": "Solanum lycopersicum", "cropType": "fruitVegetable", "growthStage": "flowering", "healthStatus": "healthy", "photo": "tomato" },
+            { "name": "Tomato – Row B", "species": "Solanum lycopersicum", "cropType": "fruitVegetable", "growthStage": "fruiting", "healthStatus": "nutrientWarning", "photo": "tomato" }
           ]
         },
         {
@@ -34,7 +34,7 @@
           "staff": ["manager", "officer2"],
           "node": { "nodeId": "NODE_02", "location": "Row A" },
           "crops": [
-            { "name": "Bell pepper – Row A", "species": "Capsicum annuum", "cropType": "Fruit vegetable", "growthStage": "Vegetative", "healthStatus": "Healthy", "photo": "bellPepper" }
+            { "name": "Bell pepper – Row A", "species": "Capsicum annuum", "cropType": "fruitVegetable", "growthStage": "vegetative", "healthStatus": "healthy", "photo": "bellPepper" }
           ]
         },
         {
@@ -42,8 +42,8 @@
           "staff": ["manager", "officer2"],
           "node": { "nodeId": "NODE_03", "location": "Channel 1" },
           "crops": [
-            { "name": "Gotukola", "species": "Centella asiatica", "cropType": "Leafy green", "growthStage": "Harvest Ready", "healthStatus": "Healthy", "photo": "gotukola" },
-            { "name": "Kankun", "species": "Ipomoea aquatica", "cropType": "Leafy green", "growthStage": "Vegetative", "healthStatus": "Healthy", "photo": "kankun" }
+            { "name": "Gotukola", "species": "Centella asiatica", "cropType": "leafyGreen", "growthStage": "harvestReady", "healthStatus": "healthy", "photo": "gotukola" },
+            { "name": "Kankun", "species": "Ipomoea aquatica", "cropType": "leafyGreen", "growthStage": "vegetative", "healthStatus": "healthy", "photo": "kankun" }
           ]
         }
       ]
@@ -63,7 +63,7 @@
           "staff": ["officer"],
           "node": { "nodeId": "NODE_01", "location": "Tower block A" },
           "crops": [
-            { "name": "Strawberry – Tower block A", "species": "Fragaria × ananassa", "cropType": "Fruit", "growthStage": "Flowering", "healthStatus": "Healthy", "photo": "strawberry" }
+            { "name": "Strawberry – Tower block A", "species": "Fragaria × ananassa", "cropType": "fruit", "growthStage": "flowering", "healthStatus": "healthy", "photo": "strawberry" }
           ]
         },
         {
@@ -71,7 +71,7 @@
           "staff": ["officer"],
           "node": { "nodeId": "NODE_02", "location": "Channel 1" },
           "crops": [
-            { "name": "Lettuce – Channel 1", "species": "Lactuca sativa", "cropType": "Leafy green", "growthStage": "Vegetative", "healthStatus": "Healthy", "photo": "lettuce" }
+            { "name": "Lettuce – Channel 1", "species": "Lactuca sativa", "cropType": "leafyGreen", "growthStage": "vegetative", "healthStatus": "healthy", "photo": "lettuce" }
           ]
         }
       ]
