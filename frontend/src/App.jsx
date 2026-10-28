@@ -12,6 +12,9 @@ import GreenhouseDetailPage from "./pages/GreenhouseDetailPage";
 import UsersPage from "./pages/UsersPage";
 import PlatformCompaniesPage from "./pages/PlatformCompaniesPage";
 import ProfilePage from "./pages/ProfilePage";
+import CropsPage from "./pages/CropsPage";
+import CropDetailPage from "./pages/CropDetailPage";
+import CropFormPage from "./pages/CropFormPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import { COMPANY_ROLES, PLATFORM_ROLES } from "./utils/roles";
 
@@ -33,6 +36,12 @@ const App = () => (
               <Route path="/nodes/:nodeId" element={<NodeDetailPage />} />
               <Route path="/greenhouses" element={<GreenhousesPage />} />
               <Route path="/greenhouses/:id" element={<GreenhouseDetailPage />} />
+              <Route path="/crops" element={<CropsPage />} />
+              <Route path="/crops/:id" element={<CropDetailPage />} />
+              <Route element={<RequireAuth roles={["admin", "farm_manager"]} />}>
+                <Route path="/crops/new" element={<CropFormPage />} />
+                <Route path="/crops/:id/edit" element={<CropFormPage />} />
+              </Route>
               <Route element={<RequireAuth roles={["admin"]} />}>
                 <Route path="/users" element={<UsersPage />} />
               </Route>

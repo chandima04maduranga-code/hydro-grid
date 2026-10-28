@@ -10,15 +10,10 @@ import HealthRing from "../components/telemetry/HealthRing";
 import AdviceList from "../components/telemetry/AdviceList";
 import NodeCard from "../components/telemetry/NodeCard";
 import TimeOfDayBanner from "../components/dashboard/TimeOfDayBanner";
+import CropCard from "../components/plants/CropCard";
 import { useTelemetryNodes } from "../hooks/useTelemetry";
 import { usePlants } from "../hooks/usePlants";
 import { HEALTH_COLORS, healthLevel } from "../utils/metrics";
-
-const PLANT_HEALTH_STYLES = {
-  Healthy: "bg-emerald-100 text-emerald-800",
-  "Nutrient Warning": "bg-amber-100 text-amber-800",
-  Critical: "bg-red-100 text-red-800"
-};
 
 const SectionHeading = ({ icon: Icon, title, count }) => (
   <div className="mb-3 flex items-center gap-2">
@@ -67,29 +62,6 @@ const GreenhouseOverview = ({ greenhouses, onSelect }) => {
         })}
       </ul>
     </section>
-  );
-};
-
-const CropCard = ({ plant }) => {
-  const { t } = useTranslation();
-  return (
-    <article className="panel overflow-hidden">
-      <div className="relative h-28 bg-leaf-50">
-        {plant.image && <img src={plant.image} alt="" className="h-full w-full object-cover" loading="lazy" />}
-        <span className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-[11px] font-semibold shadow-sm ${PLANT_HEALTH_STYLES[plant.healthStatus] || "bg-gray-100 text-gray-700"}`}>
-          {plant.healthStatus}
-        </span>
-      </div>
-      <div className="p-3">
-        <p className="truncate font-semibold text-gray-900">{plant.name}</p>
-        <p className="truncate text-xs italic text-gray-500">{plant.species}</p>
-        <div className="mt-2 flex flex-wrap gap-1 text-[11px]">
-          {plant.greenhouse && <span className="rounded bg-gray-100 px-1.5 py-0.5 text-gray-700">{displayCode(t, plant.greenhouse)}</span>}
-          <span className="rounded bg-leaf-50 px-1.5 py-0.5 font-medium text-leaf-800">{plant.growthStage}</span>
-          <span className="rounded bg-sky-50 px-1.5 py-0.5 font-mono text-sky-800">{plant.systemId}</span>
-        </div>
-      </div>
-    </article>
   );
 };
 
