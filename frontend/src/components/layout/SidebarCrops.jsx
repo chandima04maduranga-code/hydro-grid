@@ -3,10 +3,10 @@ import { useTranslation } from "react-i18next";
 import { Leaf } from "lucide-react";
 import { usePlants } from "../../hooks/usePlants";
 import { displayCode } from "../../utils/greenhouses";
+import { HEALTH_STYLES } from "../../utils/plants";
 
-const HEALTH_DOT = { Healthy: "bg-emerald-500", "Nutrient Warning": "bg-amber-500", Critical: "bg-red-600" };
 
-// The company's crops under the main menu, each linking to its greenhouse
+// The company's crops under the main menu, each linking to its details
 const SidebarCrops = ({ onNavigate }) => {
   const { t } = useTranslation();
   const plants = usePlants();
@@ -33,28 +33,24 @@ const SidebarCrops = ({ onNavigate }) => {
                     ? <img src={plant.image} alt="" loading="lazy" className="h-9 w-9 rounded-md object-cover" />
                     : <span className="flex h-9 w-9 items-center justify-center rounded-md bg-leaf-50 text-leaf-700"><Leaf className="h-4 w-4" aria-hidden="true" /></span>}
                   <span
-                    className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-white ${HEALTH_DOT[plant.healthStatus] || "bg-gray-300"}`}
-                    title={plant.healthStatus}
+                    className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-white ${HEALTH_STYLES[plant.healthStatus]?.dot || "bg-gray-300"}`}
+                    title={t(`plants.health.${plant.healthStatus}`)}
                     aria-hidden="true"
                   />
                 </span>
                 <span className="min-w-0 leading-tight">
                   <span className="block truncate text-sm font-medium text-gray-800">{plant.name}</span>
                   <span className="block truncate text-xs text-gray-500">
-                    {plant.greenhouse ? displayCode(t, plant.greenhouse) : plant.growthStage}
+                    {plant.greenhouse ? displayCode(t, plant.greenhouse) : t(`plants.stages.${plant.growthStage}`)}
                   </span>
                 </span>
               </>
             );
             return (
               <li key={plant._id}>
-                {plant.greenhouse ? (
-                  <Link to={`/greenhouses/${plant.greenhouse._id}`} onClick={onNavigate} className="flex items-center gap-2.5 rounded-md px-3 py-1.5 hover:bg-gray-50">
-                    {content}
-                  </Link>
-                ) : (
-                  <div className="flex items-center gap-2.5 px-3 py-1.5">{content}</div>
-                )}
+                <Link to={`/crops/${plant._id}`} onClick={onNavigate} className="flex items-center gap-2.5 rounded-md px-3 py-1.5 hover:bg-gray-50">
+                  {content}
+                </Link>
               </li>
             );
           })}

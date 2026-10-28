@@ -10,7 +10,7 @@ const FEATURES = [
 ];
 
 // Full-screen photo layout shared by the login and registration pages
-const AuthShell = ({ photo, photoCredit, children }) => {
+const AuthShell = ({ photo, children }) => {
   const { t } = useTranslation();
 
   return (
@@ -56,7 +56,7 @@ const AuthShell = ({ photo, photoCredit, children }) => {
         <main className="flex flex-col items-center">
           <div className="w-full max-w-md">{children}</div>
           <p className="mt-3 text-center text-xs text-gray-600">
-            © {new Date().getFullYear()} {t("app.name")} · {photoCredit}
+            © {new Date().getFullYear()} {t("app.name")}
           </p>
         </main>
       </div>

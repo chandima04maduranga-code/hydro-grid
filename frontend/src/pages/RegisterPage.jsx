@@ -65,7 +65,7 @@ const RegisterPage = () => {
 
   if (registeredName) {
     return (
-      <AuthShell photo={teaPhoto} photoCredit={t("credits.haputale")}>
+      <AuthShell photo={teaPhoto}>
         <AuthCard>
           <div className="text-center">
             <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-leaf-50">
@@ -89,7 +89,7 @@ const RegisterPage = () => {
   }
 
   return (
-    <AuthShell photo={teaPhoto} photoCredit={t("credits.haputale")}>
+    <AuthShell photo={teaPhoto}>
       <AuthCard title={t("register.title")} subtitle={t("register.subtitle")}>
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {errorCode && <Alert tone="error">{t(`errors.${errorCode}`, { defaultValue: t("errors.default") })}</Alert>}
