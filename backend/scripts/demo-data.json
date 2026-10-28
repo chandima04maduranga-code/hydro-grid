@@ -1,11 +1,11 @@
 {
   "photos": {
-    "tomato": { "url": "https://images.unsplash.com/photo-1646082273074-42a50358c053?w=400&q=70", "credit": "MRC Témiscamingue / Unsplash" },
-    "bellPepper": { "url": "https://images.unsplash.com/photo-1763038971656-f74cb170e22a?w=400&q=70", "credit": "Roman Kravtsov / Unsplash" },
-    "lettuce": { "url": "https://images.unsplash.com/photo-1591193144634-a2bf060fdb36?w=400&q=70", "credit": "Dimitri / Unsplash" },
-    "gotukola": { "url": "https://images.unsplash.com/photo-1750437527283-2958f14e15ce?w=400&q=70", "credit": "Sajidur Rahman / Unsplash" },
-    "kankun": { "url": "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400&q=70", "credit": "Elianna Friedman / Unsplash" },
-    "strawberry": { "url": "https://images.unsplash.com/photo-1757658362374-00c81b784833?w=400&q=70", "credit": "Kevin Hy / Unsplash" }
+    "tomato": { "url": "https://images.unsplash.com/photo-1646082273074-42a50358c053?w=400&q=70" },
+    "bellPepper": { "url": "https://images.unsplash.com/photo-1763038971656-f74cb170e22a?w=400&q=70" },
+    "lettuce": { "url": "https://images.unsplash.com/photo-1591193144634-a2bf060fdb36?w=400&q=70" },
+    "gotukola": { "url": "https://images.unsplash.com/photo-1750437527283-2958f14e15ce?w=400&q=70" },
+    "kankun": { "url": "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400&q=70" },
+    "strawberry": { "url": "https://images.unsplash.com/photo-1757658362374-00c81b784833?w=400&q=70" }
   },
   "companies": [
     {

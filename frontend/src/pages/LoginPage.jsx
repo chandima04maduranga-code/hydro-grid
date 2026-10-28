@@ -55,7 +55,7 @@ const LoginPage = () => {
   };
 
   return (
-    <AuthShell photo={greenhousePhoto} photoCredit={t("credits.greenhouse")}>
+    <AuthShell photo={greenhousePhoto}>
       <AuthCard title={t("login.title")} subtitle={t("login.subtitle")}>
         <form onSubmit={handleSubmit} className="space-y-3.5" noValidate>
           {errorCode && (

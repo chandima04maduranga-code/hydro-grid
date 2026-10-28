@@ -65,7 +65,7 @@ Hydro_Grid/
 └── frontend/           React + Vite single-page app
     └── src/
         ├── api/        Axios client
-        ├── assets/     Photos (credits in assets/photos/CREDITS.md)
+        ├── assets/     Photos
         ├── components/ Layout, auth and shared UI
         ├── context/    Auth session state
         ├── hooks/      Data hooks (company picker)
