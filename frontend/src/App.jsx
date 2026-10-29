@@ -15,6 +15,8 @@ import ProfilePage from "./pages/ProfilePage";
 import CropsPage from "./pages/CropsPage";
 import CropDetailPage from "./pages/CropDetailPage";
 import CropFormPage from "./pages/CropFormPage";
+import BillingPage from "./pages/BillingPage";
+import BillingReturnPage from "./pages/BillingReturnPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import { COMPANY_ROLES, PLATFORM_ROLES } from "./utils/roles";
 
@@ -44,6 +46,8 @@ const App = () => (
               </Route>
               <Route element={<RequireAuth roles={["admin"]} />}>
                 <Route path="/users" element={<UsersPage />} />
+                <Route path="/billing" element={<BillingPage />} />
+                <Route path="/billing/return" element={<BillingReturnPage />} />
               </Route>
             </Route>
             <Route element={<RequireAuth roles={PLATFORM_ROLES} />}>
