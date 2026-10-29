@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { SESSION_COOKIE } = require('../utils/session');
 
-const COMPANY_FIELDS = 'name district status plan billingCycle trialEndsAt';
+const COMPANY_FIELDS = 'name district status plan billingCycle trialEndsAt paidUntil contactPhone';
 
 // Verifies the session token (httpOnly cookie from the browser, or a Bearer
 // header from API clients) and loads the current user with their company.
