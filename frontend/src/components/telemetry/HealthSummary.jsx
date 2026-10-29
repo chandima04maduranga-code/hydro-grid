@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { CircleAlert, Cpu, TriangleAlert } from "lucide-react";
+import { CircleAlert, Cpu, TriangleAlert, WifiOff } from "lucide-react";
 import HealthRing from "./HealthRing";
 import { HEALTH_COLORS, healthLevel } from "../../utils/metrics";
 
@@ -33,13 +33,19 @@ const HealthSummary = ({ nodes }) => {
 
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      <div className={`flex items-center gap-3 rounded-lg p-4 ring-1 ${HEALTH_COLORS[level].tint}`}>
-        <HealthRing score={score} size={48} />
-        <div>
-          <p className="text-xs font-medium text-gray-600">{t("telemetry.healthScore")}</p>
-          <p className={`text-sm font-semibold ${HEALTH_COLORS[level].text}`}>{t(LEVEL_LABELS[level])}</p>
+      {online.length > 0 ? (
+        <div className={`flex items-center gap-3 rounded-lg p-4 ring-1 ${HEALTH_COLORS[level].tint}`}>
+          <HealthRing score={score} size={48} />
+          <div>
+            <p className="text-xs font-medium text-gray-600">{t("telemetry.healthScore")}</p>
+            <p className={`text-sm font-semibold ${HEALTH_COLORS[level].text}`}>{t(LEVEL_LABELS[level])}</p>
+          </div>
         </div>
-      </div>
+      ) : (
+        <Tile tint="bg-gray-50 ring-gray-200" icon={WifiOff} iconStyle="bg-gray-200 text-gray-500" label={t("telemetry.healthScore")}>
+          <span className="text-sm font-semibold text-gray-600">{t("telemetry.noLiveData")}</span>
+        </Tile>
+      )}
       <Tile
         tint={critical ? "bg-red-50 ring-red-100" : "bg-white ring-gray-200"}
         icon={CircleAlert}
