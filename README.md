@@ -17,10 +17,13 @@ Designed for Sri Lanka: the interface is available in **English and Sinhala**, s
 - **Live dashboard** – crop systems and IoT telemetry refreshed every few seconds, with the signed-in company shown in the header
 - **Greenhouses with district codes** – each greenhouse gets a permanent code from its district and number, e.g. **Nuwara Eliya GH-01**, **Badulla GH-01**, plus a plain name, growing system (NFT, deep water culture, grow bags, ebb and flow, vertical towers), main crop, area and status; removed greenhouses are archived so codes are never reused
 - **Staff per greenhouse** – company admins see everything; farm managers and field officers only see the greenhouses (and their sensors) assigned to them
-- **Ten hydroponic sensors per node** – water temperature, pH, EC (nutrients), dissolved oxygen, reservoir level, air temperature, humidity, light, CO₂ and grow-bag moisture
+- **Eleven hydroponic sensors per node** – water temperature, pH, EC (nutrients), dissolved oxygen, reservoir level, water flow, air temperature, humidity, light, CO₂ and grow-bag moisture
 - **Farmer advice** – every reading is judged against crop-specific targets; problems appear in an "Action needed" list with why it matters and numbered steps to fix it (e.g. "Reservoir is running low → top up with clean water, check for leaks, re-check pH and EC"), in English and Sinhala
 - **Farm health score and history charts** – a 0–100 health score per node and farm, and 6-hour / 24-hour / 7-day charts with the target band shaded
 - **Crop profiles** – lettuce, tomato, strawberry, bell pepper, cucumber and local leafy greens (kankun, gotukola, mukunuwenna), each with its own pH, EC and temperature targets
+- **Crop management** – list crops with search (name or species), filters (greenhouse, crop type, growth stage, health) and sorting; view details; add and edit with validation on both client and server; delete after confirmation
+- **Billing with PayHere** – company admins pay for a plan (monthly or yearly) through PayHere; the plan changes only after PayHere's signed payment notification, and every payment is kept in a history
+- **My profile** – every user can view their account details and edit their name, mobile number and language
 
 ## Sensors and targets
 
@@ -31,6 +34,7 @@ Designed for Sri Lanka: the interface is available in **English and Sinhala**, s
 | Nutrients (EC)    | mS/cm     | 1.0 – 1.6      | Crop specific (lettuce 0.8 – 1.2, tomato 2.0 – 3.5) |
 | Dissolved oxygen  | mg/L      | above 6        | Drops when the air pump fails          |
 | Reservoir level   | %         | above 40       |                                        |
+| Water flow        | L/min     | 1.5 – 4        | Drops when the circulation pump is blocked |
 | Air temperature   | °C        | 18 – 28        | Crop specific                          |
 | Humidity          | %         | 50 – 75        |                                        |
 | Light             | µmol/m²/s | 200 – 700      | Judged only between 7 AM and 6 PM (Sri Lanka time) |
@@ -50,15 +54,148 @@ Targets live in `backend/config/metrics.js` and `backend/config/crops.js`; the a
 
 Yearly billing costs 10 × the monthly price (2 months free). Plans are defined in `backend/config/plans.js`.
 
+## Payments (PayHere)
+
+Company admins open **Billing**, choose a plan and pay on PayHere's checkout page (cards, eZ Cash, mCash, bank transfer). The flow:
+
+1. `POST /api/billing/checkout` saves a *pending* payment and returns the form fields, signed with `hash = MD5(merchant_id + order_id + amount + currency + MD5(merchant_secret))`. The merchant secret never leaves the server.
+2. The browser posts the form to PayHere. After paying, PayHere sends the user back to `/billing/return`.
+3. PayHere's server calls `POST /api/billing/payhere/notify`. The API checks `md5sig`, the merchant id, the amount and the currency. Only then does the payment become *paid* and the company's plan and paid-until date update. A repeated notification changes nothing.
+
+To try it, create a free account at [sandbox.payhere.lk](https://sandbox.payhere.lk), add `localhost` under **Domains & Credentials**, and put the merchant id and secret in `backend/.env` (`PAYHERE_MERCHANT_ID`, `PAYHERE_MERCHANT_SECRET`). PayHere cannot reach `localhost`, so for the notification step run a tunnel (for example `ngrok http 5000`) and set `API_PUBLIC_URL` to its address. Sandbox test cards are listed in PayHere's documentation. Without these settings the pay buttons are turned off.
+
+## Database design
+
+MongoDB collections and how they relate. Every record except the platform admin belongs to one company, and every query filters by company.
+
+```mermaid
+erDiagram
+    COMPANY ||--o{ USER : employs
+    COMPANY ||--o{ GREENHOUSE : owns
+    COMPANY ||--o{ SENSOR_NODE : owns
+    COMPANY ||--o{ PLANT : grows
+    COMPANY ||--o{ PAYMENT : pays
+    COMPANY ||--o{ READING : stores
+    GREENHOUSE }o--o{ USER : "assigned staff"
+    GREENHOUSE ||--o{ SENSOR_NODE : contains
+    GREENHOUSE ||--o{ PLANT : contains
+    SENSOR_NODE ||--o{ READING : reports
+    SENSOR_NODE |o--o{ PLANT : "watches (systemId)"
+    USER ||--o{ PAYMENT : requests
+
+    COMPANY {
+        ObjectId _id PK
+        string name
+        string nameKey UK "lower-case name"
+        string district
+        string status "pending, active, rejected, suspended"
+        string plan "trial, starter, growth, enterprise"
+        string billingCycle "monthly, yearly"
+        date trialEndsAt
+        date paidUntil
+        string deviceKeyHash UK "SHA-256 of the device key"
+    }
+    USER {
+        ObjectId _id PK
+        ObjectId company FK "null for platform admin"
+        string name
+        string email UK
+        string phone
+        string password "bcrypt hash"
+        string role "platform_admin, admin, farm_manager, field_officer"
+        string status "pending, active, rejected, disabled"
+        string preferredLanguage "en, si"
+        date lastLoginAt
+    }
+    GREENHOUSE {
+        ObjectId _id PK
+        ObjectId company FK
+        string district
+        int number "unique per company and district"
+        string code "Nuwara Eliya GH-01"
+        string name
+        string systemType
+        string mainCrop
+        number areaSqm
+        string status
+        array assignedUsers FK "User ids"
+        date archivedAt
+    }
+    SENSOR_NODE {
+        ObjectId _id PK
+        ObjectId company FK
+        string nodeId "unique per company"
+        ObjectId greenhouse FK
+        string cropProfile
+        map latest "latest value per metric"
+        date lastSeenAt
+    }
+    READING {
+        ObjectId _id PK
+        ObjectId company FK
+        string nodeId
+        string metric
+        number value
+        date recordedAt "kept 90 days (TTL index)"
+    }
+    PLANT {
+        ObjectId _id PK
+        ObjectId company FK
+        ObjectId greenhouse FK
+        string name
+        string species
+        string cropType
+        string growthStage
+        string healthStatus
+        string systemId "sensor nodeId"
+        int plantCount
+        date plantedOn
+        date expectedHarvestOn
+        ObjectId createdBy FK
+        ObjectId updatedBy FK
+    }
+    PAYMENT {
+        ObjectId _id PK
+        ObjectId company FK
+        ObjectId requestedBy FK
+        string orderId UK
+        string plan
+        string billingCycle
+        number amountLkr
+        string status "pending, paid, failed, cancelled, chargedback"
+        string payherePaymentId
+        date paidAt
+    }
+```
+
+Indexes worth noting: `(company, district, number)` is unique for greenhouses, `(company, nodeId)` is unique for sensor nodes, and readings are indexed by `(company, nodeId, metric, recordedAt)` for the history charts.
+
+## Screenshots
+
+Taken from the demo company **Agri Lanka (Pvt) Ltd** with live virtual sensors.
+
+| | |
+| --- | --- |
+| ![Login](docs/screenshots/01-login.png) **Login** with company picker | ![Dashboard](docs/screenshots/03-dashboard-tomato-greenhouse.png) **Dashboard** for the tomato greenhouse, with problems and fix steps |
+| ![Crops](docs/screenshots/07-crops.png) **Crops**: search, filters and sorting | ![Crop details](docs/screenshots/08-crop-detail.png) **Crop details** with edit and delete |
+| ![Crop form](docs/screenshots/09-crop-form-validation.png) **Add crop** form showing validation errors | ![Greenhouses](docs/screenshots/04-greenhouses.png) **Greenhouses** grouped by district |
+| ![Greenhouse details](docs/screenshots/05-greenhouse-detail.png) **Greenhouse details** with sensors and staff | ![Sensor node](docs/screenshots/06-sensor-node.png) **Sensor node** with history charts |
+| ![Billing](docs/screenshots/10-billing.png) **Billing** with PayHere plans | ![Users](docs/screenshots/11-users.png) **Users**: access requests and roles |
+| ![Profile](docs/screenshots/12-profile.png) **My profile** | ![Sinhala](docs/screenshots/13-dashboard-sinhala.png) **Sinhala** interface |
+
+<p align="center"><img src="docs/screenshots/14-mobile-dashboard.png" alt="Mobile dashboard" width="300"><br><b>Mobile</b> layout</p>
+
+The full dashboard is in [docs/screenshots/02-dashboard.png](docs/screenshots/02-dashboard.png).
+
 ## Project structure
 
 ```
 Hydro_Grid/
 ├── backend/            Express REST API
-│   ├── config/         Plans and supported districts
+│   ├── config/         Plans, districts, sensors, crops, crop options, PayHere
 │   ├── controllers/    Request handlers
 │   ├── middleware/     JWT authentication and role guards
-│   ├── models/         Mongoose schemas (Company, User, Plant, Sensor)
+│   ├── models/         Mongoose schemas (Company, User, Greenhouse, SensorNode, Reading, Plant, Payment)
 │   ├── routes/         API route definitions
 │   ├── scripts/        Platform admin setup, migrations, virtual IoT node
 │   └── utils/          Shared validators
@@ -70,7 +207,7 @@ Hydro_Grid/
         ├── context/    Auth session state
         ├── hooks/      Data hooks (company picker)
         ├── i18n/       English and Sinhala translations
-        ├── pages/      Login, sign-up, dashboard, users, platform
+        ├── pages/      Login, sign-up, dashboard, greenhouses, crops, billing, profile, users, platform
         └── utils/      Formatting, validation and role helpers
 ```
 
@@ -142,6 +279,7 @@ Run migrations in order from the `backend` folder:
 
 ```bash
 node scripts/migrations/001-sensor-ids-per-company.js
+node scripts/migrations/002-crop-codes.js
 ```
 
 ## Security
@@ -183,8 +321,16 @@ The browser sends the session cookie automatically. API clients may instead send
 | PATCH  | `/api/greenhouses/:id`                     | Admin, manager | Edit name, system, crop, area, status, notes       |
 | PUT    | `/api/greenhouses/:id/staff`               | Company admin  | Assign farm managers and field officers            |
 | DELETE | `/api/greenhouses/:id`                     | Company admin  | Archive a greenhouse without sensor nodes          |
-| GET    | `/api/plants`                              | Company user   | List the company's crop systems                    |
-| POST   | `/api/plants`                              | Admin, manager | Create a crop system                               |
+| GET    | `/api/plants?q=&greenhouse=&cropType=&growthStage=&healthStatus=&sort=` | Company user | Search, filter and sort visible crops |
+| GET    | `/api/plants/options`                      | Company user   | Crop types, growth stages, health values, sorts    |
+| GET    | `/api/plants/:id`                          | Company user   | One crop with greenhouse and who changed it        |
+| POST   | `/api/plants`                              | Admin, manager | Add a crop                                         |
+| PATCH  | `/api/plants/:id`                          | Admin, manager | Edit a crop                                        |
+| DELETE | `/api/plants/:id`                          | Admin, manager | Delete a crop                                      |
+| GET    | `/api/billing`                             | Company admin  | Plan, trial or paid-until date, prices, payments   |
+| POST   | `/api/billing/checkout`                    | Company admin  | Start a PayHere payment (signed form fields)       |
+| POST   | `/api/billing/payments/:orderId/cancel`    | Company admin  | Mark a pending payment as cancelled                |
+| POST   | `/api/billing/payhere/notify`              | PayHere        | Signed payment notification (updates the plan)     |
 | POST   | `/api/telemetry`                           | Device key     | Ingest a batch of readings from one node           |
 | GET    | `/api/telemetry/options`                   | Company user   | Metric units and crop target bands                 |
 | GET    | `/api/telemetry/nodes?greenhouse=`         | Company user   | Visible nodes with readings, advice and health     |
@@ -207,14 +353,14 @@ The browser sends the session cookie automatically. API clients may instead send
 
 ## Roadmap
 
-- [x] Project setup and cleanup
+- [x] Project setup
 - [x] Authentication (login, registration with admin approval, roles, English/Sinhala)
-- [x] Photo-based UI redesign
+- [x] New UI redesign
 - [x] Multi-company workspaces, plans and platform admin
-- [ ] Subscription payments (PayHere sandbox), trial expiry and plan limits
+- [x] Subscription payments (PayHere sandbox), trial reminders and plan limits
 - [x] Greenhouse management (e.g. "Nuwara Eliya GH-01") with staff assignment
-- [ ] Plant management (full CRUD with validation)
+- [x] Crop management (full CRUD with search, filters, sorting and validation)
 - [x] Multi-sensor IoT telemetry with farmer advice, health score and history charts
 - [x] Colourful hydroponic dashboard with fix steps for every problem
 - [x] Security hardening (session cookies, device keys, rate limiting, headers)
-- [ ] Automated tests, Docker and CI/CD deployment
+- Deployment and CI/CD are out of scope for this project (it runs locally)

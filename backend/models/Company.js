@@ -15,6 +15,7 @@ const CompanySchema = new mongoose.Schema({
   plan: { type: String, enum: PLAN_IDS, default: 'trial' },
   billingCycle: { type: String, enum: BILLING_CYCLES, default: 'monthly' },
   trialEndsAt: { type: Date },
+  paidUntil: { type: Date },
   reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   reviewedAt: { type: Date },
   // SHA-256 of the company's device key (see utils/deviceKeys.js); never sent to clients

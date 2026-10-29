@@ -110,7 +110,8 @@
     "TRY_AGAIN": "Please try again.",
     "TOO_MANY_ATTEMPTS": "Too many attempts. Please wait 15 minutes and try again.",
     "TOO_MANY_REQUESTS": "Too many requests. Please wait a moment and try again.",
-    "PLANT_NOT_FOUND": "This crop was not found, or you do not have access to it."
+    "PLANT_NOT_FOUND": "This crop was not found, or you do not have access to it.",
+    "PAYHERE_NOT_CONFIGURED": "Online payments are not set up yet. Add the PayHere merchant details to the server settings."
   },
   "fields": {
     "REQUIRED": "This field is required",
@@ -141,7 +142,8 @@
     "profile": "My profile",
     "ourCrops": "Our crops",
     "noCrops": "No crops added yet.",
-    "crops": "Crops"
+    "crops": "Crops",
+    "billing": "Billing"
   },
   "users": {
     "title": "User management",
@@ -389,7 +391,8 @@
     "showAll": "Show all ({{count}})",
     "showLess": "Show less",
     "allGoodTitle": "Everything looks good",
-    "reservoir": "Reservoir"
+    "reservoir": "Reservoir",
+    "noLiveData": "No live data"
   },
   "advice": {
     "waterTemp.high": {
@@ -764,6 +767,58 @@
       "-name": "Name Z–A",
       "harvest": "Harvest date",
       "planted": "Recently planted"
+    }
+  },
+  "billing": {
+    "title": "Billing",
+    "subtitle": "Your Hydro_Grid plan and payments. Payments are made securely through PayHere.",
+    "currentPlan": "Current plan",
+    "trialLeft_one": "Free trial: {{count}} day left",
+    "trialLeft_other": "Free trial: {{count}} days left",
+    "trialEnded": "Your free trial has ended. Choose a plan to keep using Hydro_Grid.",
+    "paidUntil": "Paid until {{date}}",
+    "expiredOn": "Your plan ended on {{date}}. Renew to keep using Hydro_Grid.",
+    "notPaidYet": "No payment received yet for this plan.",
+    "choosePlan": "Choose a plan",
+    "renewOrChange": "Renew or change your plan",
+    "cycle": "Billing cycle",
+    "payWithPayHere": "Pay with PayHere",
+    "renew": "Renew this plan",
+    "secureNote": "You will be taken to PayHere to pay by card, eZ Cash, mCash or bank transfer. Hydro_Grid never sees your card details.",
+    "notConfigured": "Online payments are not set up on this server yet, so the pay buttons are turned off.",
+    "cancelledNotice": "You cancelled the payment on PayHere. Nothing was charged.",
+    "dismiss": "Dismiss",
+    "history": "Payment history",
+    "noPayments": "No payments yet.",
+    "date": "Date",
+    "plan": "Plan",
+    "amount": "Amount",
+    "status": "Status",
+    "reference": "Reference",
+    "statuses": {
+      "paid": "Paid",
+      "pending": "Pending",
+      "cancelled": "Cancelled",
+      "failed": "Failed",
+      "chargedback": "Charged back"
+    },
+    "backToBilling": "Back to billing",
+    "return": {
+      "checkingTitle": "Confirming your payment…",
+      "checkingText": "Please wait while PayHere confirms the payment.",
+      "paidTitle": "Payment received",
+      "paidText": "Thank you. Your plan is now active.",
+      "waitingTitle": "Payment is being processed",
+      "waitingText": "PayHere has not confirmed the payment yet. Your plan will update as soon as it does. You can check the billing page later."
+    },
+    "reminder": {
+      "trialEnds_one": "Your free trial ends in {{count}} day.",
+      "trialEnds_other": "Your free trial ends in {{count}} days.",
+      "trialEnded": "Your free trial has ended.",
+      "planEnds_one": "Your plan ends in {{count}} day.",
+      "planEnds_other": "Your plan ends in {{count}} days.",
+      "planEnded": "Your plan has ended.",
+      "action": "Go to billing"
     }
   }
 }

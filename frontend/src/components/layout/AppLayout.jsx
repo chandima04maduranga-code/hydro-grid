@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Bell, Building2, LayoutDashboard, Leaf, LogOut, Menu, ShieldCheck, UserRound, Users, Warehouse, X } from "lucide-react";
+import { Bell, Building2, CreditCard, LayoutDashboard, Leaf, LogOut, Menu, ShieldCheck, UserRound, Users, Warehouse, X } from "lucide-react";
 import apiClient from "../../api/axiosConfig";
 import { useAuth } from "../../context/AuthContext";
 import Avatar from "../common/Avatar";
@@ -47,6 +47,30 @@ const usePendingCount = (source) => {
   return source ? count : 0;
 };
 
+const REMIND_DAYS = 3;
+
+const PlanReminder = ({ company }) => {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const [now] = useState(() => Date.now());
+  const endsAt = company?.plan === "trial" ? company.trialEndsAt : company?.paidUntil;
+  if (!endsAt || location.pathname.startsWith("/billing")) return null;
+  const daysLeft = Math.ceil((new Date(endsAt) - now) / 86400000);
+  if (daysLeft > REMIND_DAYS) return null;
+
+  return (
+    <div className={`mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg px-4 py-3 text-sm ring-1 ${daysLeft <= 0 ? "bg-red-50 text-red-800 ring-red-200" : "bg-amber-50 text-amber-900 ring-amber-200"}`}>
+      <span className="flex items-center gap-2">
+        <CreditCard className="h-4 w-4 shrink-0" aria-hidden="true" />
+        {daysLeft <= 0
+          ? t(company.plan === "trial" ? "billing.reminder.trialEnded" : "billing.reminder.planEnded")
+          : t(company.plan === "trial" ? "billing.reminder.trialEnds" : "billing.reminder.planEnds", { count: daysLeft })}
+      </span>
+      <Link to="/billing" className="btn btn-primary h-8 px-3">{t("billing.reminder.action")}</Link>
+    </div>
+  );
+};
+
 const NavItems = ({ items, pendingPath, pendingCount, onNavigate }) => (
   <nav className="space-y-0.5" aria-label="Main">
     {items.map(({ to, label, icon: Icon }) => (
@@ -85,7 +109,9 @@ const AppLayout = () => {
         { to: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
         { to: "/greenhouses", label: t("nav.greenhouses"), icon: Warehouse },
         { to: "/crops", label: t("nav.crops"), icon: Leaf },
-        ...(user.role === "admin" ? [{ to: "/users", label: t("nav.users"), icon: Users }] : [])
+        ...(user.role === "admin"
+          ? [{ to: "/users", label: t("nav.users"), icon: Users }, { to: "/billing", label: t("nav.billing"), icon: CreditCard }]
+          : [])
       ]),
     { to: "/profile", label: t("nav.profile"), icon: UserRound }
   ];
@@ -206,6 +232,7 @@ const AppLayout = () => {
         </header>
 
         <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 sm:px-6">
+          {user.role === "admin" && <PlanReminder company={user.company} />}
           <Outlet />
         </main>
       </div>
